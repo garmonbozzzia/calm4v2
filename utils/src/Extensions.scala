@@ -1,5 +1,7 @@
 package org.gbz
 
+import ammonite.ops._
+
 object Extensions {
 //  implicit class FastParseW[T](val parser: Parser[T]) extends AnyVal {
 //    def fastParse(data: String): Option[T] = parser.parse(data) match {
@@ -33,6 +35,7 @@ object Extensions {
     def traceWith[B](f: A => B ): A = { println(f(obj)); obj}
     def trace[U](u: => U): A = traceWith(_ => u)
     def trace: A = trace[A](obj)
+    def log(path: Path) = { write.over(path, obj.toString); obj }
   }
 
   def assertEq[T](y: T): T => Unit = x => assert(x == y)
