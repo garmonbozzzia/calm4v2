@@ -19,6 +19,7 @@ object utils extends CommonModule {
 object calm extends CommonModule {
   def moduleDeps = Seq(utils)
   def ivyDeps = Agg(
+    ivy"org.scala-lang:scala-reflect:2.12.4",
     ivy"com.lihaoyi::fastparse:1.0.0",
     ivy"net.ruippeixotog::scala-scraper:2.1.0",
     ivy"org.json4s::json4s-native:3.5.3",
