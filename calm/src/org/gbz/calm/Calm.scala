@@ -27,10 +27,14 @@ object CalmModel {
   }
   trait CalmParser[T] { def parse(s: String): T }
 
-  case class CourseRecord(cId: Int, start: String, end: String, cType: String, venue: String, status: String)
-//  case class CourseList(courses: Seq[CourseRecord])
-//  case class CourseList(courses: Seq[Seq[String]])
-  case class CourseList(courses: Seq[CourseRecord])
+  case class CourseRecord(cId: String, start: String, end: String, cType: String, venue: String, status: String)
+  //  case class CourseList(courses: Seq[CourseRecord])
+  //  case class CourseList(courses: Seq[Seq[String]])
+  case class CourseList(courses: Seq[CourseRecord]){
+    def c10d = CourseList(courses.filter(_.cType == "10-Day"))
+    def dullabha = CourseList(courses.filter(_.venue == "Dhamma Dullabha"))
+    def finished = CourseList(courses.filter(_.status == "Finished"))
+  }
 
   implicit object CourseListRequest extends CalmRequest[CourseList] {
     override def uri: Uri = CalmUri.coursesUri()
@@ -44,9 +48,11 @@ object CalmModel {
         for {
           href <- html >?> attr("href")("a")
           id <- courseIdParser.fastParse(href)
-        } yield CourseRecord( id, (html >> text).replace("*",""), end, cType, venue, status)
+        } yield CourseRecord( id.toString, (html >> text).replace("*",""), end, cType, venue, status)
       case x => x.trace; throw new Exception("error".trace)
     }
+
+
   }
 }
 
@@ -69,9 +75,18 @@ object Calm {
       data = (parse(json.utf8String) \ "data").extract[Seq[Seq[String]]]
     } yield calmRequest.parseEntity(json.utf8String)
 
-  def import2redis: Any => Any = {
-    case CourseList(courses) => courses.foreach(import2redis)
+  def export2redis: Any => Any = {
+    case CourseList(courses) => courses.foreach(export2redis)
     case x@CourseRecord(cId, start, end, cType, venue, status) =>
-      redisClient.hmset(s"c4.cs.$cId.", x.ccToMap - "cId")
+      redisClient.hmset(s"c4.cs.$cId.", x.ccToMap)
   }
+
+  def courseRecordFromMap(map: Map[String, String]): CourseRecord = CourseRecord(
+    map("cId"), map("start"), map("end"), map("cType"), map("venue"), map("status")
+  )
+  def loadCourseList: CourseList = CourseList(redisClientPool.withClient{ client => client.keys("c4.cs.*.").get.flatten
+    .map(client.hgetall1(_)).flatten
+    .map(courseRecordFromMap(_))
+    //.map(fromMap[CourseRecord](_))
+  })
 }

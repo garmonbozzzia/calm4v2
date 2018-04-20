@@ -35,7 +35,10 @@ object Extensions {
     def traceWith[B](f: A => B ): A = { println(f(obj)); obj}
     def trace[U](u: => U): A = traceWith(_ => u)
     def trace: A = trace[A](obj)
-    def log(path: Path) = { write.over(path, obj.toString); obj }
+    def log(implicit path: Path) = {
+      write.append(path, s"[${java.util.Calendar.getInstance.getTime}]:${obj.toString}\n")
+      obj
+    }
   }
 
   def assertEq[T](y: T): T => Unit = x => assert(x == y)
