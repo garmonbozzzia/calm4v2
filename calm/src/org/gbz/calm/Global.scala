@@ -49,4 +49,27 @@ object Global {
 
     constructorMirror(constructorArgs:_*).asInstanceOf[T]
   }
+
+  val calmStates = Seq(
+    "NewPendingForConfirmation",
+    "PendingForConfirmation",
+    "Confirmed",
+    "RequestedReconfirm",
+    "Reconfirmed",
+    "Arrived",
+    "Left",
+    "Completed",
+    "NewPendingForWaitlist",
+    "PendingForWaitlist",
+    "ConfirmableWaitlist",
+    "WaitListReqReconfirm",
+    "WaitListReconfirmed",
+    "NewApplication",
+    "NewNoVacancy",
+    "NoVacancy",
+    "NoShow",
+    "Cancelled",
+    "Discontinued",
+    "Refused"
+  )
 }

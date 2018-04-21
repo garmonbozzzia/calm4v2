@@ -1,7 +1,7 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
+import akka.stream.scaladsl.Source
 import org.gbz.Extensions._
-import org.gbz.calm.CalmModel.CalmRequest
 import org.gbz.calm.{Authentication, Calm}
 import utest._
 
@@ -70,25 +70,56 @@ object HelloTests extends TestSuite{
     'Timer - {
       Timer(Thread.sleep(1000)){(t,r) => println(t)}
     }
+    import org.gbz.calm.CalmModel._
     'Calm - {
-//      val x: CourseList = Calm.http(GetCourseList)
-//      val y: CourseList = Calm.redis(GetCourseList)
-      import org.gbz.calm.CalmModel._
       val request = implicitly[CalmRequest[CourseList]]
-//      for {
-//        httpCourseList <- Calm.http[CourseList](request)
-//        _ = Calm.export2redis(httpCourseList.log)
-//        redisCourseList = Calm.load(request).log
-//      } yield httpCourseList.log
       Timer(Calm.loadCourseList.c10d.dullabha.finished)((t,cs) =>
         cs.trace(t).courses.sortBy(_.start).mkString("\n").log)
-//        .map(_.courses.mkString("\n").log(logs/"courses.json"))
-//      val courses = GetCourseList(filter).fromCalm ==> Future[CourseList]
-      //Calm.save()
-//      CourseList(filter).fromCalm ==> Future[CourseList]
-//      CourseList(filter).fromRedis
-//      CourseList(filter).get
+    }
 
+    'CourseList - {
+      val request = implicitly[CalmRequest[CourseList]]
+      for {
+              httpCourseList <- Calm.http[CourseList](request)
+              _ = Calm.export2redis(httpCourseList)
+              redisCourseList = Calm.loadCourseList
+      } yield redisCourseList.courses.size.trace == httpCourseList.courses.size.trace
+    }
+
+    'LoadApps - {
+      val courses = Calm.loadCourseList.c10d.dullabha.finished.courses
+      Source.fromIterator(() => courses.iterator)
+          //.take(5)
+        .mapAsync(1)(Calm.http)
+        .runForeach(x => Calm.export2redis(x.traceWith(_.course_id)))
+        .map(_ => Calm.redisClient.keys("c4.a.*").get.size.trace)
+    }
+
+    'Stats - {
+      val allApps = Calm.loadAllApps
+      //allApps.apps.foreach(_.log)
+      allApps.states.map{case(x,y) => f"$x%25s: $y"}.mkString("\n").trace
+      s"  Total: ${allApps.apps.size}".trace
+      s"    New: ${allApps.n.apps.size}".trace
+      s"    Old: ${allApps.o.apps.size}".trace
+      s"Service: ${allApps.s.apps.size}".trace
+      s"   Male: ${allApps.m.apps.size}".trace
+      s" Female: ${allApps.f.apps.size}".trace
+
+      allApps.s.states.map{case(x,y) => f"$x%25s: $y"}.mkString("\n").trace
+      allApps.s.complete.apps.count(_.nServe == 0).trace
+      allApps.s.complete.apps.count(x => x.nServe == 0 && x.nSat == 1).trace
+      allApps.s.complete.apps.filter(x => x.nServe == 0 && x.nSat == 1)
+        .map(x=> s"${x.familyName} ${x.givenName}").mkString("\n")trace
+    }
+
+    'CourseData - {
+      val course = Calm.loadCourseList.c10d.dullabha.finished.courses.head
+      for {
+        courseData <- Calm.http(course)
+        _ = Calm.export2redis(courseData)
+        //allApps = Calm.loadCourseApps(course.cId)
+      } yield courseData.all.mkString("\n").log
     }
 
     'map2cc - {
