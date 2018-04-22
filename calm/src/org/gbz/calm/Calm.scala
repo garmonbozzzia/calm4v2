@@ -30,11 +30,15 @@ object CalmModel {
     def s = AppList(apps.filter(_.role == "S"))
     def m = AppList(apps.filter(_.gender == "M"))
     def f = AppList(apps.filter(_.gender == "F"))
-    def complete = AppList(apps.filter(_.state == "Completed"))
-    def left = AppList(apps.filter(_.state == "Left"))
-    def cancelled = AppList(apps.filter(_.state == "Cancelled"))
+    def filter(f: ApplicantRecord => Boolean) = AppList(apps.filter(f))
+    def complete = st("Completed")
+    def left = st("Left")
+    def cancelled = st("Cancelled")
+    def st(st: String*) = AppList(apps.filter(x => st.contains(x.state)))
+    def stN(st: String*) = AppList(apps.filterNot(x => st.contains(x.state)))
 
     def states = calmStates.map(x => x -> apps.count(_.state == x)).sortBy(-_._2).filter(_._2 > 0)
+    def ages = (16 to 80).map(age => age -> apps.count(_.age == age))
   }
 
   case class CourseList(courses: Seq[CourseRecord]){
@@ -143,6 +147,14 @@ object Calm {
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
     } yield calmRequest.parseEntity(json.utf8String)
+
+  def html[Entity]: CalmRequest[Entity] => Future[String] = calmRequest =>
+    for {
+      auth <- Authentication.cookie
+      request = Get(calmRequest.uri).withHeaders(auth)
+      response <- Http().singleRequest(request)
+      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+    } yield json.utf8String
 
   private def export(redisClient: RedisClient): Any => Any = {
     case CourseList(courses) => courses.foreach(export2redis)

@@ -99,6 +99,18 @@ object HelloTests extends TestSuite{
       val allApps = Calm.loadAllApps
       //allApps.apps.foreach(_.log)
       allApps.states.map{case(x,y) => f"$x%25s: $y"}.mkString("\n").trace
+
+      allApps.s.states.map{case(x,y) => f"$x%25s: $y"}.mkString("\n").trace
+      allApps.s.complete.apps.count(_.nServe == 0).trace
+      allApps.s.complete.apps.count(x => x.nServe == 0 && x.nSat == 1).trace
+      allApps.s.complete.apps.filter(x => x.nServe == 0 && x.nSat == 1)
+        .map(x=> s"${x.familyName} ${x.givenName}").mkString("\n")trace
+
+      allApps.ages.map{case (a,c) => f"$a%2s: $c%3s${List.fill((c+3)/4)(":").mkString}"}
+      allApps.s.ages.map{case (a,c) => f"$a%2s: $c%3s${List.fill(c)(":").mkString}"}
+      allApps.s.ages.map{case (a,c) => f"$a%2s: $c%3s${List.fill(c)(":").mkString}"}
+      allApps.s.filter(_.nServe == 0).ages.map{case (a,c) => f"$a%2s: $c%3s${List.fill(c)(":").mkString}"}
+        .mkString("\n").trace
       s"  Total: ${allApps.apps.size}".trace
       s"    New: ${allApps.n.apps.size}".trace
       s"    Old: ${allApps.o.apps.size}".trace
@@ -106,11 +118,44 @@ object HelloTests extends TestSuite{
       s"   Male: ${allApps.m.apps.size}".trace
       s" Female: ${allApps.f.apps.size}".trace
 
-      allApps.s.states.map{case(x,y) => f"$x%25s: $y"}.mkString("\n").trace
-      allApps.s.complete.apps.count(_.nServe == 0).trace
-      allApps.s.complete.apps.count(x => x.nServe == 0 && x.nSat == 1).trace
-      allApps.s.complete.apps.filter(x => x.nServe == 0 && x.nSat == 1)
-        .map(x=> s"${x.familyName} ${x.givenName}").mkString("\n")trace
+      s"Total Comleted: ${allApps.apps.size}".trace
+      s"           New: ${allApps.n.apps.size}".trace
+      s"           Old: ${allApps.o.apps.size}".trace
+      s"  Old sat once: ${allApps.complete.o.apps.count(_.nSat == 1)}".trace
+      s"       Service: ${allApps.s.apps.size}".trace
+      s"          Male: ${allApps.m.apps.size}".trace
+      s"        Female: ${allApps.f.apps.size}".trace
+
+      allApps.complete.o.apps.count(_.nSat == 1).traceWith(x => s"Old students sat once: $x").trace
+      allApps.complete.o.apps.count(_.nServe > 0).traceWith(x => s"Old students already served: $x").trace
+    }
+
+    'Html - {
+      import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+      import net.ruippeixotog.scalascraper.dsl.DSL._
+      val fields = List(
+        "app_rcvd",
+        "display_id",
+        "note_alerts",
+        "full_time",
+        "birth_date",
+        "phone_home",
+        "phone_mobile",
+        "email",
+        "friends_family",
+        "incremented_enrolled_quota_at",
+        "decremented_enrolled_quota_at"
+      )
+      val course = Calm.loadCourseList.c10d.dullabha.finished.courses.head
+      for{
+        courseData <- Calm.html(course)
+        apps = (browser.parseString(courseData) >> elementList("tbody"))
+          .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
+        //(browser.parseString(courseData) >> elementList("tbody")).map(_.outerHtml.take(100)).trace
+        b = apps.map(_("decremented_enrolled_quota_at")).filter(_ != "").size.trace
+        c = apps.map(_("incremented_enrolled_quota_at")).filter(_ != "").size.trace
+        d = apps.map(_("app_rcvd")).sorted.mkString("\n").trace
+      } yield d
     }
 
     'CourseData - {
@@ -142,7 +187,6 @@ object HelloTests extends TestSuite{
 
         constructorMirror(constructorArgs:_*).asInstanceOf[T]
       }
-
 
       fromMap[A](Map("a" -> "A")).trace
     }
