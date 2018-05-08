@@ -29,7 +29,7 @@ object Authentication {
     } yield session.trace
 
   def newCookie: Future[Cookie] = signIn.map(Cookie("_sso_session", _))
-  def sessionKey = "c4.SessionId"
+  def sessionKey = "c4:SessionId"
   def save(sId: String) = sId.<|(Calm.redisClient.setex(sessionKey, 1750, _))
   def cookie = Calm.redisClient.get(sessionKey)
     .fold(signIn.map(save))(

@@ -10,6 +10,15 @@ object Extensions {
 //    }
 //  }ddd
 
+  object Timer {
+    def apply[T,R](expr: => T)(tf: Long => Any)(cont: T => R) = {
+      val start = System.currentTimeMillis
+      val res = expr
+      tf(System.currentTimeMillis - start)
+      cont(res)
+    }
+  }
+
   implicit class ZipExt[A](val obj: Iterable[A]) extends AnyVal {
     def zipWith[B,C](that: Iterable[B])(f: (A, B) => C): Iterable[C] = obj.zip(that).map(_.reduce(f))
     //def zip[A1 >: A, B, That](that: GenIterable[B])(implicit bf: CanBuildFrom[Repr, (A1, B), That]): That = {
@@ -21,6 +30,7 @@ object Extensions {
 
   implicit class TransformImplicit[T](val obj: T) extends AnyVal {
     def <|[B](f: T => B): T = {f(obj); obj}
+    def <*[B](expr: => B): T = {expr; obj}
     def |?>(condition: Boolean)(transform: T => T): T =
       if(condition) transform(obj) else obj
     def |?>(condition: T => Boolean)(transform: T => T): T =

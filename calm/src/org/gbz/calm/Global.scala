@@ -44,7 +44,7 @@ object Global {
       if(param.typeSignature <:< typeOf[Option[Any]])
         m.get(paramName)
       else
-        m.get(paramName).getOrElse(throw new IllegalArgumentException("Map is missing required parameter named " + paramName))
+        m.getOrElse(paramName, throw new IllegalArgumentException("Map is missing required parameter named " + paramName))
     })
 
     constructorMirror(constructorArgs:_*).asInstanceOf[T]

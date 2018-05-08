@@ -19,5 +19,6 @@ object ExtensionsTest extends TestSuite {
       //assert(List( true, true))
       //List( 1 -> 2, 2 -> 2).map(_.reduce( (x,y) => assert(f1(x) == y).trace))
     }
+    'Timer - Timer(Thread.sleep(1000))(_.trace)(_ => "Done".trace)
   }
 }
