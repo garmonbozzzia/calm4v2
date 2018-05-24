@@ -1,6 +1,6 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Sink, Source}
 import org.gbz.Extensions._
 import org.gbz.calm.{Authentication, Calm, CalmDb, Stats}
 import utest._
@@ -19,9 +19,13 @@ object CalmTests extends TestSuite{
 
   val tests = Tests{
     'Sandbox - {
-      Calm.redisClient.hmset("_", Map("a"-> 0, "b" -> 0))
-      Calm.redisClient.hmset("_", Map("c"-> 1, "b" -> 1))
-      Calm.redisClient.hgetall1("_").trace
+      object Enum extends Enumeration {
+        val Red = Value("red")
+        val Blue = Value("blue")
+      }
+
+      Enum.withName("red").trace
+      Enum.withName("green")
     }
 
     'GoogleTest - {
@@ -69,6 +73,7 @@ object CalmTests extends TestSuite{
         .diff(Calm.redisAllApps.apps.map(_.cId).distinct).trace
       Source.fromIterator(() => c10ds.courses.iterator)
         .filter(x => newCourses.contains(x.cId))
+        .map(_.dataRequest1)
         .mapAsync(1)(Calm.http)
         .runForeach(x => CalmDb.export(x.traceWith(_.course_id)))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
@@ -77,9 +82,10 @@ object CalmTests extends TestSuite{
     'LoadApps - {
       val c10ds = Calm.redisCourseList.c10d.dullabha.finished
       Source.fromIterator(() => c10ds.courses.iterator)
+        .map(_.dataRequest1)
         .mapAsync(1)(Calm.http)
-        .runForeach(x => CalmDb.export(x.traceWith(_.course_id)))
-        .map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
+        .runForeach(x => CalmDb.update(x.traceWith(_.course_id)))
+        //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
 
     'StatsByCourses - {
@@ -87,138 +93,28 @@ object CalmTests extends TestSuite{
       allApps.apps.groupBy(_.cId).map(_._2.size).trace
     }
 
-    'Stats - {
-      Stats.run
+    'Stats - Stats.run
+
+    'Courses - {
+      val courses = Calm.redisCourseList
+      courses.courses.map(_.venue).distinct
     }
 
-    import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-    import net.ruippeixotog.scalascraper.dsl.DSL._
-    'HtmlImport - {
-      val fields = List(
-        "app_rcvd",
-        "display_id",
-        "birth_date",
-        "phone_home",
-        "phone_mobile",
-        "email",
-        "incremented_enrolled_quota_at",
-        "decremented_enrolled_quota_at"
-      )
-
-      val fieldsRename = Map(
-        "app_rcvd" -> "received",
-        "phone_home" -> "phoneHome",
-        "phone_mobile" -> "phoneMobile",
-        "incremented_enrolled_quota_at" -> "enrolled",
-        "decremented_enrolled_quota_at" -> "dismissed"
-      )
-
-      val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head.trace
-      for {
-        courseData <- Calm.html(course)
-        apps = (browser.parseString(courseData) >> elementList("tbody"))
-          .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
-          .map(_.filterKeys(fields.contains).map { case (k, v) => fieldsRename.getOrElse(k, k) -> v })
-        kvs = apps.map(app => s"*:*-${app("display_id")}.app" -> app)
-        _ = CalmDb.update(kvs).trace
-//        _ = Calm.redisClientPool.withClient { rc =>
-//          apps.foreach(app => rc.hmset(s"${course.cId}:${app("display_id")}.app", app))
-////          apps.foreach{app => s"${course.cId}:${app("display_id")}.app".trace; app.trace}
-        } yield ()
-    }
-
-    'HtmlStats - {
-      val fields = List(
-        "app_rcvd",
-        "display_id",
-        "note_alerts",
-        "full_time",
-        "birth_date",
-        "phone_home",
-        "phone_mobile",
-        "email",
-        "friends_family",
-        "incremented_enrolled_quota_at",
-        "decremented_enrolled_quota_at"
-      )
-      val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head.trace
-      for{
-        courseData <- Calm.html(course)
-        apps = (browser.parseString(courseData) >> elementList("tbody"))
-          .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
-        _ = apps.flatten.groupBy(x => x._1)
-          .mapValues(_.map(_._2).distinct)
-            .traceWith(x => x("actions"))
-          .mapValues(_.size)
-          .mkString("\n").trace.log
-//        _ = apps.map(x => x("")).groupBy(x => x).mapValues(_.size).mkString("\n").trace.log
-      } yield ()
-    }
-
-    'Html - {
-      val fields = List(
-        "app_rcvd",
-        "display_id",
-        "birth_date",
-        "phone_home",
-        "phone_mobile",
-        "email",
-        "friends_family",
-        "incremented_enrolled_quota_at",
-        "decremented_enrolled_quota_at"
-      )
-      val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
-      for{
-        courseData <- Calm.html(course)
-        apps = (browser.parseString(courseData) >> elementList("tbody"))
-          .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
-          .log
-        //(browser.parseString(courseData) >> elementList("tbody")).map(_.outerHtml.take(100)).trace
-        b = apps.map(_("decremented_enrolled_quota_at")).filter(_ != "").size.trace
-//        c = apps.map(_("incremented_enrolled_quota_at")).filter(_ != "").sorted.mkString("\n").trace
-        d = apps.map(_("app_rcvd")).sorted.mkString("\n").trace
-      } yield d
+    'TotalUpdate - {
+      val courses = Calm.redisCourseList.c10d.ekb.courses
+      Source.fromIterator(() => courses.iterator)
+          .map(_.traceWith(_.cId))
+        .mapAsync(1)(org.gbz.calm.CourseData2.update)
+        .runWith(Sink.ignore).map(_=>"Done".trace)
     }
 
     'CourseData - {
       val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
       for {
-        courseData <- Calm.http(course)
+        courseData <- Calm.http(course.dataRequest1)
         _ = CalmDb.update(courseData)
         //allApps = Calm.loadCourseApps(course.cId)
       } yield courseData.all.mkString("\n").log
-    }
-
-    'BandwithTest - {
-      Source.repeat(Get("http://80.211.27.151/ru/schedules/schdullabha"))
-          .take(1000)
-        .mapAsync(1000)(Http().singleRequest(_))
-        .map(_.entity.discardBytes())
-        .runForeach(_.trace(System.currentTimeMillis()))
-    }
-
-    'map2cc - {
-      import scala.reflect._
-      import scala.reflect.runtime.universe._
-
-      def fromMap[T: TypeTag: ClassTag](m: Map[String,_]) = {
-        val rm = runtimeMirror(classTag[T].runtimeClass.getClassLoader)
-        val classTest = typeOf[T].typeSymbol.asClass
-        val classMirror = rm.reflectClass(classTest)
-        val constructor = typeOf[T].decl(termNames.CONSTRUCTOR).asMethod
-        val constructorMirror = classMirror.reflectConstructor(constructor)
-        val constructorArgs = constructor.paramLists.flatten.map( (param: Symbol) => {
-          val paramName = param.name.toString
-          if(param.typeSignature <:< typeOf[Option[Any]])
-            m.get(paramName)
-          else
-            m.getOrElse(paramName, throw new IllegalArgumentException("Map is missing required parameter named " + paramName))
-        })
-
-        constructorMirror(constructorArgs:_*).asInstanceOf[T]
-      }
-
-      fromMap[A](Map("a" -> "A")).trace
     }
   }
 }

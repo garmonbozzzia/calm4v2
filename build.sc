@@ -4,16 +4,17 @@ import coursier.ivy.IvyRepository
 import mill._
 import mill.scalalib._
 import coursier.maven.MavenRepository
+import mill.define.Target
+import mill.scalajslib._
+import mill.util.Loose
 
 trait CommonModule extends ScalaModule{
   def scalaVersion = "2.12.4"
-  override def repositories = {
-    println("common")
+  override def repositories =
     super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
-  }
+
   object test extends Tests{
     override def repositories = {
-      println("test")
       super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
     }
     def ivyDeps = Agg(
@@ -26,9 +27,9 @@ trait CommonModule extends ScalaModule{
 
 object foo extends ScalaModule {
   def scalaVersion = "2.12.4"
-  override def repositories = {
+  override def repositories =
     super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
-  }
+
   def ivyDeps = Agg(
     ivy"net.cakesolutions::scala-kafka-client:1.1.0"
   )
@@ -36,6 +37,10 @@ object foo extends ScalaModule {
 
 object utils extends CommonModule {
   def ivyDeps = Agg(ivy"com.lihaoyi::ammonite-ops:1.1.0")
+}
+
+object server extends CommonModule {
+
 }
 
 object calm extends CommonModule {
@@ -55,4 +60,26 @@ object calm extends CommonModule {
     ivy"net.cakesolutions::scala-kafka-client:1.1.0",
     ivy"net.cakesolutions::scala-kafka-client-akka:1.1.0"
   )
+}
+
+import mill.scalajslib._
+object scalajs extends ScalaJSModule {
+  def scalaVersion = "2.12.4"
+  def scalaJSVersion = "0.6.22"
+  def mainClass = Some("BootstrapTestApp")
+//  def mainClass = Some("HelloApp")
+
+//  override final def moduleKind = T { ModuleKind.CommonJSModule }
+
+//  scalajslib.ScalaJSBridge.scalaJSBridge.
+
+  override def ivyDeps: Target[Loose.Agg[Dep]] = Agg (
+    ivy"com.lihaoyi::upickle::0.6.6",
+    ivy"com.github.karasiq::scalajs-bootstrap::2.3.1",
+    ivy"com.lihaoyi::scalarx::0.3.2",
+    ivy"com.lihaoyi::scalatags::0.6.7",
+    ivy"io.scalajs.npm::kafka-node::0.4.2",
+    ivy"org.scala-js::scalajs-dom::0.9.5"
+  )
+
 }

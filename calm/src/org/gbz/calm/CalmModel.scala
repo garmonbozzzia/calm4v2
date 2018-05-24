@@ -1,6 +1,7 @@
 package org.gbz.calm
 
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.{HttpHeader, Uri}
+import akka.http.scaladsl.model.headers.RawHeader
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.gbz.Extensions._
@@ -14,6 +15,7 @@ object CalmModel {
   trait CalmRequest[T]{
     def uri: Uri
     def parseEntity(data: String): T
+    def headers: scala.collection.immutable.Seq[HttpHeader] = Nil
   }
 
   case class AppList(apps: Seq[ApplicantRecord]) {
@@ -33,15 +35,35 @@ object CalmModel {
     def ages: immutable.IndexedSeq[(Int, Int)] = (16 to 80).map(age => age -> apps.count(_.age == age))
   }
 
-//  object CourseList {
-//    def keyPattern = "*.course"
-//    def all = Calm.redisClientPool.withClient(rc => rc.keys(keyPattern).get.flatten.map())
-//  }
-
+  object CourseList {
+    object types {
+      val c10d = "10-Day"
+      val c3d = "3-DayOSC"
+      val c1d = "1-DayOSC"
+      val sati = "Satipatthana"
+    }
+    object venues {
+      val dd = "Dhamma Dullabha"
+      val ekb = "Yekaterinburg"
+      val spb = "Saint Petersburg"
+      val nvsb = "Novosibirsk"
+      val msc = "Moscow"
+      val izhevsk = "Izhevsk"
+    }
+  }
   case class CourseList(courses: Seq[CourseRecord]){
-    def c10d = CourseList(courses.filter(_.cType == "10-Day"))
-    def dullabha = CourseList(courses.filter(_.venue == "Dhamma Dullabha"))
+    import CourseList._
+    def cType(cTypes: String*) = CourseList(courses.filter(x => cTypes.contains(x.cType)))
+    def c10d = cType(types.c10d)
+    def c3d = cType(types.c3d)
+    def c1d = cType(types.c1d)
+    def sati = cType(types.sati)
+    def all = cType(types.c10d, types.c3d, types.c1d, types.sati)
+    def venue(vs: String*) = CourseList(courses.filter(x => vs.contains(x.venue)))
+    def dullabha = venue(venues.dd)
+    def ekb = venue(venues.ekb)
     def finished = CourseList(courses.filter(_.status == "Finished"))
+    def scheduled = CourseList(courses.filter(_.status == "Scheduled"))
   }
 
   implicit object CourseListRequest extends CalmRequest[CourseList] {
@@ -66,10 +88,9 @@ object CalmModel {
       map("cId"), map("start"), map("end"), map("cType"), map("venue"), map("status")
     )
   }
-  case class CourseRecord(cId: String, start: String, end: String, cType: String, venue: String, status: String)
-    extends CalmRequest[CourseData]{
-    override def uri: Uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String): CourseData = parse(data).extract[CourseData]
+  case class CourseRecord(cId: String, start: String, end: String, cType: String, venue: String, status: String) {
+    val dataRequest1 = CourseData2.dataRequest1(cId)
+    val dataRequest2 = CourseData2.dataRequest2(cId)
   }
 
   object ApplicantRecord {
@@ -80,13 +101,14 @@ object CalmModel {
 
     def apply(map: Map[String,String]): ApplicantRecord = ApplicantRecord(
       map("cId"), map("aId").toInt, map("displayId"), map("givenName"), map("familyName"), map("age").toInt,
-      map("gender"), map("role"), map("pregnant").toBoolean, map("nSat").toInt, map("nServe").toInt, map("state")
+      map("gender"), map("role"), map("pregnant").toBoolean, map("nSat").toInt,
+      map("nServe").toInt, CalmStates.withName(map("state"))
     )
   }
 
   case class ApplicantRecord(cId: String, aId: Int, displayId: String, givenName: String, familyName: String,
                              age: Int, gender: String, role: String, pregnant: Boolean,
-                             nSat: Int, nServe: Int, state: String)
+                             nSat: Int, nServe: Int, state: CalmStates.Value)
 
   case class ApplicantJsonRecord(id: Int, display_id: String, applicant_given_name: String, applicant_family_name: String,
                                  age: Option[Int], sitting: Boolean, old: Boolean, conversation_locale: String,
@@ -94,7 +116,8 @@ object CalmModel {
                                  courses_served: Option[Int], room: String,
                                  hall_position: String, confirmation_state_name: String) {
     def app(cId: String, role: String, gender: String) = ApplicantRecord(cId, id,display_id,applicant_given_name, applicant_family_name,
-      age.getOrElse(-1), gender, role, pregnant, courses_sat.getOrElse(0), courses_served.getOrElse(0), confirmation_state_name)
+      age.getOrElse(-1), gender, role, pregnant, courses_sat.getOrElse(0), courses_served.getOrElse(0),
+      CalmStates.withName(confirmation_state_name))
   }
 
   case class OldNew(old: Seq[ApplicantJsonRecord], `new`: Seq[ApplicantJsonRecord])
@@ -133,5 +156,4 @@ object CalmModel {
       serving.male.sorted ++
       serving.female.sorted
   }
-
 }

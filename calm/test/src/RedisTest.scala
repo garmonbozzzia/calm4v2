@@ -44,9 +44,9 @@ object RedisTests extends TestSuite {
     'RedisMap - {
       import org.json4s.jackson.Serialization.write
       //val testKey
-      Calm.redisClient.del("k")
+      CalmDb.redisClient.del("k")
       val data = Seq( Map("a"->"aa", "b"->"bb"), Map("a"->"aa", "c"->"CCC", "b"->"BBB"), Map("a" -> "aa"))
-      data.map(update("k",_)).map(Calm.redisClientPool.withClient).collect{
+      data.map(update("k",_)).map(CalmDb.redisClientPool.withClient).collect{
         case NewKey(k) => "NewKey" -> k
         case x@FieldChanges(key, fields) => key -> write(fields)
       }.map{case (k,v) => KafkaProducerRecord(testTopic, Some(k), v)}
@@ -58,15 +58,15 @@ object RedisTests extends TestSuite {
     }
 
     'Redis - {
-      Calm.redisClient.psetex("c4:testKey", 10000, "testValue2")
-      Calm.redisClient.get("c4:testKey").trace
-      Calm.redisClientPool.withClient(client => {
-        Calm.redisClient.psetex("c4:testKey1", 10000, "testValue1")
-        Calm.redisClient.get("c4:testKey1").trace
+      CalmDb.redisClient.psetex("c4:testKey", 10000, "testValue2")
+      CalmDb.redisClient.get("c4:testKey").trace
+      CalmDb.redisClientPool.withClient(client => {
+        CalmDb.redisClient.psetex("c4:testKey1", 10000, "testValue1")
+        CalmDb.redisClient.get("c4:testKey1").trace
       })
-      Calm.redisClientPool.withClient(client => {
-        Calm.redisClient.psetex("c4:testKey2", 10000, "testValue2")
-        Calm.redisClient.get("c4:testKey2").trace
+      CalmDb.redisClientPool.withClient(client => {
+        CalmDb.redisClient.psetex("c4:testKey2", 10000, "testValue2")
+        CalmDb.redisClient.get("c4:testKey2").trace
       })
     }
   }

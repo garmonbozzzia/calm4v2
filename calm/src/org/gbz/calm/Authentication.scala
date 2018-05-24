@@ -29,9 +29,9 @@ object Authentication {
     } yield session.trace
 
   def newCookie: Future[Cookie] = signIn.map(Cookie("_sso_session", _))
-  def sessionKey = "c4:SessionId"
-  def save(sId: String) = sId.<|(Calm.redisClient.setex(sessionKey, 1750, _))
-  def cookie = Calm.redisClient.get(sessionKey)
+  def sessionKey = "_sessionId"
+  def save(sId: String) = sId.<|(CalmDb.redisClient.setex(sessionKey, 1750, _))
+  def cookie = CalmDb.redisClient.get(sessionKey)
     .fold(signIn.map(save))(
       Promise.successful(_).future)
     .map(Cookie("_sso_session", _))
