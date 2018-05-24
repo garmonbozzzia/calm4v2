@@ -50,6 +50,36 @@ object Global {
     constructorMirror(constructorArgs:_*).asInstanceOf[T]
   }
 
+  def toImmutable[A](elements: Iterable[A]) =
+    new scala.collection.immutable.Iterable[A] {
+      override def iterator: Iterator[A] = elements.toIterator
+    }
+
+  object CalmStates extends Enumeration {
+    val NewPendingForConfirmation = Value("NewPendingForConfirmation ")
+    val PendingForConfirmation = Value("PendingForConfirmation ")
+    val Confirmed = Value("Confirmed ")
+    val RequestedReconfirm = Value("RequestedReconfirm ")
+    val Reconfirmed = Value("Reconfirmed ")
+    val Arrived = Value("Arrived ")
+    val Left = Value("Left ")
+    val Completed = Value("Completed ")
+    val NewPendingForWaitlist = Value("NewPendingForWaitlist ")
+    val PendingForWaitlist = Value("PendingForWaitlist ")
+    val ConfirmableWaitlist = Value("ConfirmableWaitlist ")
+    val WaitListReqReconfirm = Value("WaitListReqReconfirm ")
+    val WaitListReconfirmed = Value("WaitListReconfirmed ")
+    val NewApplication = Value("NewApplication ")
+    val NewNoVacancy = Value("NewNoVacancy ")
+    val NoVacancy = Value("NoVacancy ")
+    val NoShow = Value("NoShow ")
+    val Cancelled = Value("Cancelled ")
+    val Discontinued = Value("Discontinued ")
+    val Refused = Value("Refused ")
+  }
+
+  //CalmStatuses.values
+
   val calmStates = Seq(
     "NewPendingForConfirmation",
     "PendingForConfirmation",

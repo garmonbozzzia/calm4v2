@@ -19,7 +19,7 @@ object CalmDb {
   case class NoChanges(key: String) extends Diff
 
   def update(keyPattern: String, data: Map[String, String]): RedisClient => Diff = rc => {
-    rc.keys[String](keyPattern).trace match {
+    rc.keys[String](keyPattern) match {
       case Some(Nil) => NewKey(keyPattern) <* rc.hmset(keyPattern, data)
       case Some(Seq(Some(key))) =>
         val oldData = rc.hgetall1(key).get
@@ -39,16 +39,16 @@ object CalmDb {
     case x: CourseList => x.courses.flatMap(keys)
     case x: CourseData => x.allApps.flatMap(keys)
     case x: CourseRecord => Seq(s"${x.cId}.course" -> x.ccToMap.mapValues(_.toString))
-    case x: ApplicantRecord => Seq(s"${x.cId}:${x.displayId}.app" -> x.ccToMap.mapValues(_.toString))
+    case x: ApplicantRecord => Seq(s"${x.cId}:${x.aId}-${x.displayId}.app" -> x.ccToMap.mapValues(_.toString))
   }
 
-  def export(entity: Any): Seq[Boolean] =
-    redisClientPool.withClient{ rc => keys(entity).map { case (k, v) => rc.hmset(k, v) } }
+  def export(entity: Any): Seq[Boolean] = redisClientPool.withClient{ rc =>
+    keys(entity).map { case (k, v) => rc.hmset(k, v) } }
 
   def update(entity: Any): Seq[ProducerRecord[String, String]] = redisClientPool.withClient{ rc =>
-    keys(entity).map{case (k,v) => update(k,v)(rc)}.collect{
-      case NewKey(k) => "NewKey" -> k
-      case x@FieldChanges(key, fields) => key -> s"$key\n${write(fields)}"
+    keys(entity).map { case (k,v) => update(k,v)(rc)}.collect{
+      case NewKey(k) => k -> s"NewKey $k"
+      case x@FieldChanges(key, fields) => key -> s"ChangeFields $key ${write(fields)}"
     }.map{case (k,v) => KafkaProducerRecord(updateTopic, Some(k), v)}.map(_ <| producer.send)
   }
 }

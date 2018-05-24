@@ -7,15 +7,19 @@ object RenameKeys extends App {
   import Global._
   import org.gbz.Extensions._
 
+  CalmDb.redisClientPool.withClient { rc =>
+    rc.keys("*:[A-z]*").get.flatten.trace.map(rc.del(_))
+  }
+
 //  Calm.redisClientPool.withClient(
 //    rc => rc.keys("*.app").get.flatten.traceWith(_.size)
 //      .map { k => rc.rename(k, s"${rc.hget(k, "cId").get}:${rc.hget(k, "aId").get}.app")  }
 //    )
 
-  Calm.redisClientPool.withClient(
-    rc => rc.keys("*.app").get.flatten.traceWith(_.size)
-      .map { k => rc.rename(k, s"${rc.hget(k, "cId").get}:${rc.hget(k, "aId").get}-${rc.hget(k, "displayId").get}.app")  }
-    )
+//  Calm.redisClientPool.withClient(
+//    rc => rc.keys("*.app").get.flatten.traceWith(_.size)
+//      .map { k => rc.rename(k, s"${rc.hget(k, "cId").get}:${rc.hget(k, "aId").get}-${rc.hget(k, "displayId").get}.app")  }
+//    )
 
 //  Calm.redisClientPool.withClient(
 //    rc =>  rc.keys("c4:a:*").get.flatten.traceWith(_.size)

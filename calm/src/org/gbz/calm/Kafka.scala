@@ -1,5 +1,8 @@
-import cakesolutions.kafka.{KafkaProducer, KafkaProducerRecord}
+import akka.kafka.Subscriptions
+import akka.kafka.scaladsl.Consumer
+import cakesolutions.kafka.{KafkaConsumer, KafkaProducer, KafkaProducerRecord}
 import com.typesafe.config.Config
+import org.apache.kafka.clients.consumer.internals.PartitionAssignor.Subscription
 import org.apache.kafka.common.serialization.StringSerializer
 
 class SampleSubmitter(config: Config) {
@@ -10,10 +13,7 @@ class SampleSubmitter(config: Config) {
       keySerializer = new StringSerializer,
       valueSerializer = new StringSerializer)
   )
-
   private val topic = config.getString("topic")
-
-
   def close() = producer.close()
 }
 
