@@ -114,7 +114,7 @@ object CalmTests extends TestSuite{
         courseData <- Calm.http(course.dataRequest1)
         _ = CalmDb.update(courseData)
         //allApps = Calm.loadCourseApps(course.cId)
-      } yield courseData.all.mkString("\n").log
+      } yield courseData.allApps.mkString("\n").log
     }
   }
 }
