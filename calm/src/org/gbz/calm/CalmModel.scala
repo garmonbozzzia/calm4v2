@@ -125,10 +125,13 @@ object CalmModel {
         ApplicantState.values.toList.indexOf(y.confirmation_state_name)
     }
   }
+
+  implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
+
   case class CourseData(course_id: Int, venue_name: String, start_date: String, end_date: String,
                         user_can_assign_hall_position: Boolean, sitting: MaleFemaleSittings,
                         serving: MaleFemaleServing) {
-    implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
+
 
     def app: (Role.Value, Gender.Value) => (ApplicantJsonRecord => ApplicantRecord) =
       (a,b) => x => x.app(course_id.toString, a, b)
@@ -142,5 +145,22 @@ object CalmModel {
       sitting.female.old.sorted.map(app(OldStudent, Female)) ++
       serving.male.sorted.map(app(Server, Male)) ++
       serving.female.sorted.map(app(Server, Female))
+  }
+
+  case class CourseDataOnly(course_id: Int, venue_name: String, start_date: String, end_date: String)
+
+  def extractAppList(data: String) = {
+    import Gender._
+    import Role._
+    val json = parse(data)
+    val cId: String = (json\"course_id").extract[String]
+    def f(jsonArray: JValue, role: Role.Value, gender: Gender.Value ) =
+      jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId, role, gender))
+    f(json \ "sitting" \ "male" \ "new", NewStudent, Male ) ++
+    f(json \ "sitting" \ "male" \ "old", OldStudent, Male) ++
+    f(json \ "sitting" \ "female" \ "new", NewStudent, Female) ++
+    f(json \ "sitting" \ "female" \ "old", OldStudent, Female) ++
+    f(json \ "serving" \ "male", Server, Male) ++
+    f(json \ "serving" \ "female", Server, Female)
   }
 }
