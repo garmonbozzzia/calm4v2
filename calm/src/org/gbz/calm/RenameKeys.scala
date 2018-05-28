@@ -1,10 +1,7 @@
 package org.gbz.calm
 
-import com.redis.RedisClientPool
-
 /* Created on 02.05.18 */
 object RenameKeys extends App {
-  import Global._
   import org.gbz.Extensions._
 
   CalmDb.redisClientPool.withClient { rc =>

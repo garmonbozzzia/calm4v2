@@ -4,6 +4,8 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import org.gbz.Extensions._
 
+import scala.language.implicitConversions
+
 /**
   * Created by yuri on 26.08.17.
   */

@@ -2,10 +2,9 @@ package org.gbz.calm
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.kafka.scaladsl.Consumer
+import akka.kafka.{ConsumerSettings, Subscriptions}
 import akka.util.ByteString
-import com.redis._
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 import org.gbz.calm.Global._
@@ -21,8 +20,8 @@ object Calm {
 
   val xmlHeaders = scala.collection.immutable.Seq(accept,xml,referer)
 
-  import CalmModel._
   import CalmDb._
+  import CalmModel._
 
   val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
     .withBootstrapServers("localhost:9092")

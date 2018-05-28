@@ -2,7 +2,6 @@ package org.gbz.calm
 
 import org.gbz.calm.CalmModel._
 import org.gbz.calm.Global._
-import org.json4s.jackson.JsonMethods.parse
 
 object CourseData2 {
   import net.ruippeixotog.scalascraper.dsl.DSL.Extract._

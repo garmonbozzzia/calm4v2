@@ -104,9 +104,10 @@ object CalmModel {
                                  language_native: String, ad_hoc: String, pregnant: Boolean, courses_sat: Option[Int],
                                  courses_served: Option[Int], room: String,
                                  hall_position: String, confirmation_state_name: String) {
-    def app(cId: String, role: Role, gender: Gender) = ApplicantRecord(cId, id,display_id,applicant_given_name, applicant_family_name,
-      age.getOrElse(-1), gender, role, pregnant, courses_sat.getOrElse(0), courses_served.getOrElse(0),
-      ApplicantStates.withName(confirmation_state_name))
+    def app(cId: String, role: Role, gender: Gender) =
+      ApplicantRecord(cId, id,display_id,applicant_given_name, applicant_family_name,
+        age.getOrElse(-1), gender, role, pregnant, courses_sat.getOrElse(0), courses_served.getOrElse(0),
+        ApplicantStates.withName(confirmation_state_name))
   }
 
   object ApplicantRecordOrd extends Ordering[ApplicantJsonRecord] {
@@ -117,14 +118,11 @@ object CalmModel {
         ApplicantStates.values.toList.map(_.toString).indexOf(y.confirmation_state_name)
     }
   }
-
   implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
 
   case class CourseDataOnly(course_id: Int, venue_name: String, start_date: String, end_date: String)
 
   def extractAppList(data: String) = {
-    import Genders._
-    import Roles._
     val json = parse(data)
     val cId = (json\"course_id").extract[Int]
     def f(jsonArray: JValue, role: Role, gender: Gender ) =
