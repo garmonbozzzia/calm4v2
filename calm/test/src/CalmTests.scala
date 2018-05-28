@@ -2,12 +2,24 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
 import org.gbz.Extensions._
-import org.gbz.calm.{Authentication, Calm, CalmDb, Stats}
+import org.gbz.calm.CalmEnums._
+import org.gbz.calm.CalmModel.ApplicantJsonRecord
+import org.gbz.calm._
 import utest._
 
 import scala.concurrent.Await
 
 case class A(a:String){}
+case class MocId(id: String = "100")
+case class MocEnum(gender: Gender.Value, state: ApplicantState.Value)
+case class MocApplicantRecord(cId: Int, gender: Gender.Value, role: Role.Value, aId: Int, displayId: String,
+                              givenName: String, familyName: String, age: Int, pregnant: Boolean, nSat: Int,
+                              nServe: Int, state: ApplicantState.Value)
+case class MocApplicantRecordPart(aId: Int, displayId: String, givenName: String, familyName: String,
+                              age: Int, pregnant: Boolean, nSat: Int, nServe: Int, state: ApplicantState.Value){
+  def result(cId: Int, gender: Gender.Value, role: Role.Value) =
+    MocApplicantRecord(cId, gender, role, aId, displayId, givenName, familyName, age, pregnant, nSat, nServe, state)
+}
 
 object CalmTests extends TestSuite{
   import org.gbz.calm.Global._
@@ -28,6 +40,23 @@ object CalmTests extends TestSuite{
       Enum.withName("green")
     }
 
+    'Parse - {
+      import ammonite.ops._
+      pwd.trace
+      val b = ammonite.ops.read(pwd/'calm/'test/'resources/"course2535.json")
+//      b.length
+      import org.gbz.calm.Global._
+      import org.json4s._
+      import org.json4s.jackson.JsonMethods.parse
+
+      val r1 = CalmModel.extractAppList(b)
+      val r2 = parse(b).extract[CalmModel.CourseData].allApps
+
+      r1.size.trace
+      r2.size.trace
+      r1 == r2
+    }
+
     'GoogleTest - {
       val a = for{
         result <- Http().singleRequest(Get("https://google.com/"))
@@ -42,6 +71,12 @@ object CalmTests extends TestSuite{
         result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))
         _ <- result.traceWith(_.status).discardEntityBytes().future()
       } yield auth
+    }
+
+    'FindForm - {
+      CalmDb.redisClientPool.withClient(rc => {
+        rc.keys("*.app").get.flatten.map(rc.hgetall1(_)).map(_.get).filter(_("familyName").contains("Кир")).mkString("\n").trace
+      })
     }
 
     import org.gbz.calm.CalmModel._
