@@ -1,8 +1,5 @@
-import akka.kafka.Subscriptions
-import akka.kafka.scaladsl.Consumer
-import cakesolutions.kafka.{KafkaConsumer, KafkaProducer, KafkaProducerRecord}
+import cakesolutions.kafka.KafkaProducer
 import com.typesafe.config.Config
-import org.apache.kafka.clients.consumer.internals.PartitionAssignor.Subscription
 import org.apache.kafka.common.serialization.StringSerializer
 
 class SampleSubmitter(config: Config) {
