@@ -1,6 +1,6 @@
 package org.gbz.calm
 
-import org.gbz.calm.CalmModel.{ApplicantRecord, CalmRequest, CourseData, CourseRecord}
+import org.gbz.calm.CalmModel._
 import org.gbz.calm.Global._
 import org.json4s.jackson.JsonMethods.parse
 
@@ -37,13 +37,19 @@ object CourseData2 {
       .map(x => x("display_id").replace("*","") -> x).toMap
   }
 
-  def dataRequest1(cId: String) = new CalmRequest[CourseData] {
+//  def dataRequest1(cId: String) = new CalmRequest[CourseData] {
+//    override def uri = CalmUri.courseUri(cId.toInt)
+//    override def parseEntity(data: String): CourseData = parse(data).extract[CourseData]
+//    override def headers = Calm.xmlHeaders
+//  }
+
+  def dataRequest1(cId: String) = new CalmRequest[AppList] {
     override def uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String): CourseData = parse(data).extract[CourseData]
+    override def parseEntity(data: String) = AppList(CalmModel.extractAppList(data))
     override def headers = Calm.xmlHeaders
   }
 
-  def merge(data1: CourseData, data2: CourseData2 ) = data1.allApps
+  def merge(data1: AppList, data2: CourseData2 ) = data1.apps
     .map(x => x -> data2(x.displayId))
     .map{ case (x,y) =>
       (s"${x.cId}:${x.aId}-${x.displayId}.app", x.ccToMap.mapValues(_.toString) ++ (y - "display_id"))

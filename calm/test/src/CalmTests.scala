@@ -9,18 +9,6 @@ import utest._
 
 import scala.concurrent.Await
 
-case class A(a:String){}
-case class MocId(id: String = "100")
-case class MocEnum(gender: Gender.Value, state: ApplicantState.Value)
-case class MocApplicantRecord(cId: Int, gender: Gender.Value, role: Role.Value, aId: Int, displayId: String,
-                              givenName: String, familyName: String, age: Int, pregnant: Boolean, nSat: Int,
-                              nServe: Int, state: ApplicantState.Value)
-case class MocApplicantRecordPart(aId: Int, displayId: String, givenName: String, familyName: String,
-                              age: Int, pregnant: Boolean, nSat: Int, nServe: Int, state: ApplicantState.Value){
-  def result(cId: Int, gender: Gender.Value, role: Role.Value) =
-    MocApplicantRecord(cId, gender, role, aId, displayId, givenName, familyName, age, pregnant, nSat, nServe, state)
-}
-
 object CalmTests extends TestSuite{
   import org.gbz.calm.Global._
 
@@ -38,23 +26,6 @@ object CalmTests extends TestSuite{
 
       Enum.withName("red").trace
       Enum.withName("green")
-    }
-
-    'Parse - {
-      import ammonite.ops._
-      pwd.trace
-      val b = ammonite.ops.read(pwd/'calm/'test/'resources/"course2535.json")
-//      b.length
-      import org.gbz.calm.Global._
-      import org.json4s._
-      import org.json4s.jackson.JsonMethods.parse
-
-      val r1 = CalmModel.extractAppList(b)
-      val r2 = parse(b).extract[CalmModel.CourseData].allApps
-
-      r1.size.trace
-      r2.size.trace
-      r1 == r2
     }
 
     'GoogleTest - {
@@ -108,18 +79,18 @@ object CalmTests extends TestSuite{
         .diff(Calm.redisAllApps.apps.map(_.cId).distinct).trace
       Source.fromIterator(() => c10ds.courses.iterator)
         .filter(x => newCourses.contains(x.cId))
-        .map(_.dataRequest1)
+        .map(_.traceWith(_.cId).dataRequest1)
         .mapAsync(1)(Calm.http)
-        .runForeach(x => CalmDb.export(x.traceWith(_.course_id)))
+        .runForeach(x => CalmDb.export(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
 
     'LoadApps - {
       val c10ds = Calm.redisCourseList.c10d.dullabha.finished
       Source.fromIterator(() => c10ds.courses.iterator)
-        .map(_.dataRequest1)
+        .map(_.traceWith(_.cId).dataRequest1)
         .mapAsync(1)(Calm.http)
-        .runForeach(x => CalmDb.update(x.traceWith(_.course_id)))
+        .runForeach(x => CalmDb.update(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
 
@@ -149,7 +120,7 @@ object CalmTests extends TestSuite{
         courseData <- Calm.http(course.dataRequest1)
         _ = CalmDb.update(courseData)
         //allApps = Calm.loadCourseApps(course.cId)
-      } yield courseData.allApps.mkString("\n").log
+      } yield courseData.apps.mkString("\n").log
     }
   }
 }

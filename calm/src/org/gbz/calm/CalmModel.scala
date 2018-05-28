@@ -111,12 +111,6 @@ object CalmModel {
       ApplicantState.withName(confirmation_state_name))
   }
 
-  case class OldNew(old: Seq[ApplicantJsonRecord], `new`: Seq[ApplicantJsonRecord])
-
-  case class MaleFemaleSittings(male: OldNew, female: OldNew)
-
-  case class MaleFemaleServing(male: Seq[ApplicantJsonRecord], female: Seq[ApplicantJsonRecord])
-
   object ApplicantRecordOrd extends Ordering[ApplicantJsonRecord] {
     override def compare(x: ApplicantJsonRecord, y: ApplicantJsonRecord): Int = {
       if(x.confirmation_state_name == y.confirmation_state_name)
@@ -128,39 +122,21 @@ object CalmModel {
 
   implicit val ord: Ordering[ApplicantJsonRecord] = ApplicantRecordOrd
 
-  case class CourseData(course_id: Int, venue_name: String, start_date: String, end_date: String,
-                        user_can_assign_hall_position: Boolean, sitting: MaleFemaleSittings,
-                        serving: MaleFemaleServing) {
-
-
-    def app: (Role.Value, Gender.Value) => (ApplicantJsonRecord => ApplicantRecord) =
-      (a,b) => x => x.app(course_id.toString, a, b)
-
-    import Gender._
-    import Role._
-    lazy val allApps: Seq[ApplicantRecord] =
-      sitting.male.`new`.sorted.map(app(NewStudent, Male)) ++
-      sitting.male.old.sorted.map(app(OldStudent, Male)) ++
-      sitting.female.`new`.sorted.map(app(NewStudent, Female)) ++
-      sitting.female.old.sorted.map(app(OldStudent, Female)) ++
-      serving.male.sorted.map(app(Server, Male)) ++
-      serving.female.sorted.map(app(Server, Female))
-  }
-
   case class CourseDataOnly(course_id: Int, venue_name: String, start_date: String, end_date: String)
 
   def extractAppList(data: String) = {
     import Gender._
     import Role._
     val json = parse(data)
-    val cId: String = (json\"course_id").extract[String]
+    val cId = (json\"course_id").extract[Int]
     def f(jsonArray: JValue, role: Role.Value, gender: Gender.Value ) =
-      jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId, role, gender))
+      jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId.toString, role, gender))
     f(json \ "sitting" \ "male" \ "new", NewStudent, Male ) ++
-    f(json \ "sitting" \ "male" \ "old", OldStudent, Male) ++
-    f(json \ "sitting" \ "female" \ "new", NewStudent, Female) ++
-    f(json \ "sitting" \ "female" \ "old", OldStudent, Female) ++
-    f(json \ "serving" \ "male", Server, Male) ++
-    f(json \ "serving" \ "female", Server, Female)
+      f(json \ "sitting" \ "male" \ "old", OldStudent, Male) ++
+      f(json \ "sitting" \ "female" \ "new", NewStudent, Female) ++
+      f(json \ "sitting" \ "female" \ "old", OldStudent, Female) ++
+      f(json \ "serving" \ "male", Server, Male) ++
+      f(json \ "serving" \ "female", Server, Female)
+
   }
 }

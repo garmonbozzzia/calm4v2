@@ -10,9 +10,10 @@ import org.gbz.calm.CalmModel.CourseRecord
 object CalmApps extends App {
   def loadApps = {
     val c10ds = Calm.redisCourseList.c10d.dullabha.finished
-    Source.fromIterator(() => c10ds.courses.map(_.dataRequest1).iterator)
+    Source.fromIterator(() => c10ds.courses.iterator)
+      .map(_.traceWith(_.cId).dataRequest1)
       .mapAsync(1)(Calm.http)
-      .runForeach(x => CalmDb.update(x.traceWith(_.course_id)))
+      .runForeach(x => CalmDb.update(x))
   }
 
   def courseTypes = Calm.redisCourseList.c10d.dullabha.courses.map(_.status).distinct
