@@ -2,18 +2,18 @@ package org.gbz.calm
 
 /* Created on 24.05.18 */
 object CalmEnums {
-  object Gender extends Enumeration {
+  object Genders extends Enumeration {
     val Male = Value("M")
     val Female = Value("F")
   }
 
-  object Role extends Enumeration {
+  object Roles extends Enumeration {
     val NewStudent = Value("N")
     val OldStudent = Value("O")
     val Server = Value("S")
   }
 
-  object ApplicantState extends Enumeration {
+  object ApplicantStates extends Enumeration {
     val NewPendingForConfirmation = Value("NewPendingForConfirmation")
     val PendingForConfirmation = Value("PendingForConfirmation")
     val Confirmed = Value("Confirmed")
@@ -51,4 +51,9 @@ object CalmEnums {
     val Msc = Value("Moscow")
     val Izhevsk = Value("Izhevsk")
   }
+  type Gender = Genders.Value
+  type Role = Roles.Value
+  type ApplicantState = ApplicantStates.Value
+  type CourseType = CourseTypes.Value
+  type CourseVenue = CourseVenues.Value
 }

@@ -18,9 +18,9 @@ object CalmModel {
     def headers: scala.collection.immutable.Seq[HttpHeader] = Nil
   }
 
-  import CalmEnums.ApplicantState._
-  import CalmEnums.Gender._
-  import CalmEnums.Role._
+  import CalmEnums.ApplicantStates._
+  import CalmEnums.Genders._
+  import CalmEnums.Roles._
 
   case class AppList(apps: Seq[ApplicantRecord]) {
     def filterT[V](extractor: ApplicantRecord => V)(st: V*) =
@@ -36,7 +36,7 @@ object CalmModel {
     def left: AppList = filterT(_.state)(Left)
     def cancelled: AppList = filterT(_.state)(Cancelled)
 
-    def states: List[(CalmEnums.ApplicantState.Value, Int)] = ApplicantState.values
+    def states: List[(ApplicantState, Int)] = ApplicantStates.values
       .map(x => x -> apps.count(_.state == x))
       .filter(_._2 > 0).toList.sortBy(-_._2)
     def ages: immutable.IndexedSeq[(Int, Int)] = (16 to 80).map(age => age -> apps.count(_.age == age))
@@ -44,13 +44,13 @@ object CalmModel {
 
   case class CourseList(courses: Seq[CourseRecord]){
     import CourseTypes._
-    def cType(cTypes: CourseTypes.Value*) = CourseList(courses.filter(x => cTypes.contains(x.cType)))
+    def cType(cTypes: CourseType*) = CourseList(courses.filter(x => cTypes.contains(x.cType)))
     def c10d = cType(C10d)
     def c3d = cType(C3d)
     def c1d = cType(C1d)
     def sati = cType(Sati)
     def all = cType(C10d, C3d, C1d, Sati)
-    def venue(vs: CourseVenues.Value*) = CourseList(courses.filter(x => vs.contains(x.venue)))
+    def venue(vs: CourseVenue*) = CourseList(courses.filter(x => vs.contains(x.venue)))
     def dullabha = venue(CourseVenues.DD)
     def ekb = venue(CourseVenues.Ekb)
     def finished = CourseList(courses.filter(_.status == "Finished"))
@@ -69,54 +69,52 @@ object CalmModel {
         for {
           href <- html >?> attr("href")("a")
           id <- courseIdParser.fastParse(href)
-        } yield CourseRecord( id.toString, (html >> text).replace("*",""), end, cType, venue, status)
+        } yield CourseRecord( id.toString, (html >> text).replace("*",""), end, CourseTypes.withName(cType),
+          CourseVenues.withName(venue), status)
       case x => x.trace; throw new Exception("error".trace)
     }
   }
 
   object CourseRecord {
     def apply(map: Map[String, String]): CourseRecord = CourseRecord(
-      map("cId"), map("start"), map("end"), map("cType"), map("venue"), map("status")
+      map("cId"), map("start"), map("end"), CourseTypes.withName(map("cType")),
+      CourseVenues.withName(map("venue")), map("status")
     )
   }
-  case class CourseRecord(cId: String, start: String, end: String, cType: String, venue: String, status: String) {
+  case class CourseRecord(cId: String, start: String, end: String,
+                          cType: CourseType, venue: CourseVenue, status: String) {
     val dataRequest1 = CourseData2.dataRequest1(cId)
     val dataRequest2 = CourseData2.dataRequest2(cId)
   }
 
   object ApplicantRecord {
-    def apply: ApplicantJsonRecord => ApplicantRecord = {
-      case ApplicantJsonRecord(id, display_id, applicant_given_name, applicant_family_name,
-      age, sitting, old, _, _, ad_hoc, pregnant, courses_sat, courses_served, _, _, state) => ???
-    }
-
     def apply(map: Map[String,String]): ApplicantRecord = ApplicantRecord(
       map("cId"), map("aId").toInt, map("displayId"), map("givenName"), map("familyName"), map("age").toInt,
-      Gender.withName(map("gender")), Role.withName(map("role")), map("pregnant").toBoolean, map("nSat").toInt,
-      map("nServe").toInt, ApplicantState.withName(map("state"))
+      Genders.withName(map("gender")), Roles.withName(map("role")), map("pregnant").toBoolean, map("nSat").toInt,
+      map("nServe").toInt, ApplicantStates.withName(map("state"))
     )
   }
 
   case class ApplicantRecord(cId: String, aId: Int, displayId: String, givenName: String, familyName: String,
-                             age: Int, gender: Gender.Value, role: Role.Value, pregnant: Boolean,
-                             nSat: Int, nServe: Int, state: ApplicantState.Value)
+                             age: Int, gender: Gender, role: Role, pregnant: Boolean,
+                             nSat: Int, nServe: Int, state: ApplicantState)
 
   case class ApplicantJsonRecord(id: Int, display_id: String, applicant_given_name: String, applicant_family_name: String,
                                  age: Option[Int], sitting: Boolean, old: Boolean, conversation_locale: String,
                                  language_native: String, ad_hoc: String, pregnant: Boolean, courses_sat: Option[Int],
                                  courses_served: Option[Int], room: String,
                                  hall_position: String, confirmation_state_name: String) {
-    def app(cId: String, role: Role.Value, gender: Gender.Value) = ApplicantRecord(cId, id,display_id,applicant_given_name, applicant_family_name,
+    def app(cId: String, role: Role, gender: Gender) = ApplicantRecord(cId, id,display_id,applicant_given_name, applicant_family_name,
       age.getOrElse(-1), gender, role, pregnant, courses_sat.getOrElse(0), courses_served.getOrElse(0),
-      ApplicantState.withName(confirmation_state_name))
+      ApplicantStates.withName(confirmation_state_name))
   }
 
   object ApplicantRecordOrd extends Ordering[ApplicantJsonRecord] {
     override def compare(x: ApplicantJsonRecord, y: ApplicantJsonRecord): Int = {
       if(x.confirmation_state_name == y.confirmation_state_name)
         x.applicant_family_name.compare(y.applicant_family_name)
-      else ApplicantState.values.toList.indexOf(x.confirmation_state_name) -
-        ApplicantState.values.toList.indexOf(y.confirmation_state_name)
+      else ApplicantStates.values.toList.map(_.toString).indexOf(x.confirmation_state_name) -
+        ApplicantStates.values.toList.map(_.toString).indexOf(y.confirmation_state_name)
     }
   }
 
@@ -125,11 +123,11 @@ object CalmModel {
   case class CourseDataOnly(course_id: Int, venue_name: String, start_date: String, end_date: String)
 
   def extractAppList(data: String) = {
-    import Gender._
-    import Role._
+    import Genders._
+    import Roles._
     val json = parse(data)
     val cId = (json\"course_id").extract[Int]
-    def f(jsonArray: JValue, role: Role.Value, gender: Gender.Value ) =
+    def f(jsonArray: JValue, role: Role, gender: Gender ) =
       jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId.toString, role, gender))
     f(json \ "sitting" \ "male" \ "new", NewStudent, Male ) ++
       f(json \ "sitting" \ "male" \ "old", OldStudent, Male) ++
