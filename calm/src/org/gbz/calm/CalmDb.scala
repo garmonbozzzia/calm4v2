@@ -4,7 +4,7 @@ import cakesolutions.kafka.{KafkaProducer, KafkaProducerRecord}
 import com.redis.{RedisClient, RedisClientPool}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
-import org.gbz.calm.CalmModel.{ApplicantRecord, CourseData, CourseList, CourseRecord}
+import org.gbz.calm.CalmModel._
 import org.json4s.jackson.Serialization.write
 import org.gbz.Extensions._
 import Global._
@@ -37,7 +37,8 @@ object CalmDb {
     case x: (String, Map[String,String]) => Seq(x)
     case x: Seq[(String, Map[String,String])] => x
     case x: CourseList => x.courses.flatMap(keys)
-    case x: CourseData => x.allApps.flatMap(keys)
+    case x: AppList => x.apps.flatMap(keys)
+//    case x: CourseData => x.allApps.flatMap(keys)
     case x: CourseRecord => Seq(s"${x.cId}.course" -> x.ccToMap.mapValues(_.toString))
     case x: ApplicantRecord => Seq(s"${x.cId}:${x.aId}-${x.displayId}.app" -> x.ccToMap.mapValues(_.toString))
   }
