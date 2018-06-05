@@ -133,6 +133,5 @@ object CalmModel {
       f(json \ "sitting" \ "female" \ "old", OldStudent, Female) ++
       f(json \ "serving" \ "male", Server, Male) ++
       f(json \ "serving" \ "female", Server, Female)
-
   }
 }

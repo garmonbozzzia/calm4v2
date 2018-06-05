@@ -66,7 +66,8 @@ import mill.scalajslib._
 object scalajs extends ScalaJSModule {
   def scalaVersion = "2.12.4"
   def scalaJSVersion = "0.6.22"
-  def mainClass = Some("BootstrapTestApp")
+  def mainClass = Some("DiodeTest")
+//  def mainClass = Some("BootstrapTestApp")
 //  def mainClass = Some("HelloApp")
 
 //  override final def moduleKind = T { ModuleKind.CommonJSModule }
@@ -74,6 +75,7 @@ object scalajs extends ScalaJSModule {
 //  scalajslib.ScalaJSBridge.scalaJSBridge.
 
   override def ivyDeps: Target[Loose.Agg[Dep]] = Agg (
+    ivy"io.suzaku::diode::1.1.3",
     ivy"com.lihaoyi::upickle::0.6.6",
     ivy"com.github.karasiq::scalajs-bootstrap::2.3.1",
     ivy"com.lihaoyi::scalarx::0.3.2",
