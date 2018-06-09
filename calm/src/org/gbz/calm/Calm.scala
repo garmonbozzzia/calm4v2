@@ -8,6 +8,7 @@ import akka.util.ByteString
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 import org.gbz.calm.Global._
+import org.gbz.calm.model._
 
 import scala.concurrent.Future
 
@@ -21,7 +22,6 @@ object Calm {
   val xmlHeaders = scala.collection.immutable.Seq(accept,xml,referer)
 
   import CalmDb._
-  import CalmModel._
 
   val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
     .withBootstrapServers("localhost:9092")
@@ -31,14 +31,6 @@ object Calm {
 
 
   //def http2 =
-
-  def http[Entity]: CalmRequest[Entity] => Future[Entity] = calmRequest =>
-    for {
-      auth <- Authentication.cookie
-      request = Get(calmRequest.uri).withHeaders(auth +: calmRequest.headers)
-      response <- Http().singleRequest(request)
-      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield calmRequest.parseEntity(json.utf8String)
 
   def redisCourseList: CourseList =
     CourseList(redisClientPool.withClient{ client => client.keys("*.course").get.flatten

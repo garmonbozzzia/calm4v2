@@ -2,9 +2,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
 import org.gbz.Extensions._
-import org.gbz.calm.CalmEnums._
-import org.gbz.calm.CalmModel.ApplicantJsonRecord
 import org.gbz.calm._
+import org.gbz.calm.model.{CourseList, CourseListRequest}
 import utest._
 
 import scala.concurrent.Await
@@ -49,18 +48,16 @@ object CalmTests extends TestSuite{
         rc.keys("*.app").get.flatten.map(rc.hgetall1(_)).map(_.get).filter(_("familyName").contains("Кир")).mkString("\n").trace
       })
     }
-
-    import org.gbz.calm.CalmModel._
     'Calm - {
-      val request = implicitly[CalmRequest[CourseList]]
+      val request = CourseListRequest
       Timer(Calm.redisCourseList.c10d.dullabha.finished)(_.trace)(cs =>
         cs.courses.sortBy(_.start).mkString("\n").log)
     }
 
     'CourseList - {
-      val request = implicitly[CalmRequest[CourseList]]
+      val request = CourseListRequest
       for {
-              httpCourseList <- Calm.http[CourseList](request)
+              httpCourseList <- request.http
               _ = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")
               _ = CalmDb.update(httpCourseList)
               redisCourseList = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")
@@ -80,7 +77,7 @@ object CalmTests extends TestSuite{
       Source.fromIterator(() => c10ds.courses.iterator)
         .filter(x => newCourses.contains(x.cId))
         .map(_.traceWith(_.cId).dataRequest1)
-        .mapAsync(1)(Calm.http)
+        .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.export(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
@@ -89,7 +86,7 @@ object CalmTests extends TestSuite{
       val c10ds = Calm.redisCourseList.c10d.dullabha.finished
       Source.fromIterator(() => c10ds.courses.iterator)
         .map(_.traceWith(_.cId).dataRequest1)
-        .mapAsync(1)(Calm.http)
+        .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.update(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
@@ -117,7 +114,7 @@ object CalmTests extends TestSuite{
     'CourseData - {
       val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
       for {
-        courseData <- Calm.http(course.dataRequest1)
+        courseData <- course.dataRequest1.http
         _ = CalmDb.update(courseData)
         //allApps = Calm.loadCourseApps(course.cId)
       } yield courseData.apps.mkString("\n").log

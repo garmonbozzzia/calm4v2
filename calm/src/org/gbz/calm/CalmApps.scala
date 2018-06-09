@@ -3,7 +3,7 @@ package org.gbz.calm
 import akka.stream.scaladsl.{Sink, Source}
 import Global._
 import org.gbz.Extensions._
-import org.gbz.calm.CalmModel.CourseRecord
+import org.gbz.calm.model.CourseRecord
 
 /* Created on 05.05.18 */
 
@@ -12,7 +12,7 @@ object CalmApps extends App {
     val c10ds = Calm.redisCourseList.c10d.dullabha.finished
     Source.fromIterator(() => c10ds.courses.iterator)
       .map(_.traceWith(_.cId).dataRequest1)
-      .mapAsync(1)(Calm.http)
+      .mapAsync(1)(_.http)
       .runForeach(x => CalmDb.update(x))
   }
 
