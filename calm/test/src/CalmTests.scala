@@ -57,7 +57,7 @@ object CalmTests extends TestSuite{
     'CourseList - {
       val request = CourseListRequest
       for {
-              httpCourseList <- Calm.http[CourseList](request)
+              httpCourseList <- request.http
               _ = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")
               _ = CalmDb.update(httpCourseList)
               redisCourseList = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")
@@ -77,7 +77,7 @@ object CalmTests extends TestSuite{
       Source.fromIterator(() => c10ds.courses.iterator)
         .filter(x => newCourses.contains(x.cId))
         .map(_.traceWith(_.cId).dataRequest1)
-        .mapAsync(1)(Calm.http)
+        .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.export(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
@@ -86,7 +86,7 @@ object CalmTests extends TestSuite{
       val c10ds = Calm.redisCourseList.c10d.dullabha.finished
       Source.fromIterator(() => c10ds.courses.iterator)
         .map(_.traceWith(_.cId).dataRequest1)
-        .mapAsync(1)(Calm.http)
+        .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.update(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
@@ -114,7 +114,7 @@ object CalmTests extends TestSuite{
     'CourseData - {
       val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
       for {
-        courseData <- Calm.http(course.dataRequest1)
+        courseData <- course.dataRequest1.http
         _ = CalmDb.update(courseData)
         //allApps = Calm.loadCourseApps(course.cId)
       } yield courseData.apps.mkString("\n").log

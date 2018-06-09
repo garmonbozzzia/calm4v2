@@ -32,14 +32,6 @@ object Calm {
 
   //def http2 =
 
-  def http[Entity]: CalmRequest[Entity] => Future[Entity] = calmRequest =>
-    for {
-      auth <- Authentication.cookie
-      request = Get(calmRequest.uri).withHeaders(auth +: calmRequest.headers)
-      response <- Http().singleRequest(request)
-      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield calmRequest.parseEntity(json.utf8String)
-
   def redisCourseList: CourseList =
     CourseList(redisClientPool.withClient{ client => client.keys("*.course").get.flatten
     .map(client.hgetall1(_)).flatten
