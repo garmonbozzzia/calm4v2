@@ -55,14 +55,14 @@ object CourseData2 {
     }
 
   def update(course: CourseRecord) = for {
-    courseData1 <- Calm.http(course.dataRequest1)
-    courseData2 <- Calm.http(course.dataRequest2)
+    courseData1 <- course.dataRequest1.http
+    courseData2 <- course.dataRequest2.http
     kvs2 = merge(courseData1,courseData2)
   } yield CalmDb.update(kvs2)
 
   def export(course: CourseRecord) = for {
-    courseData1 <- Calm.http(course.dataRequest1)
-    courseData2 <- Calm.http(course.dataRequest2)
+    courseData1 <- course.dataRequest1.http
+    courseData2 <- course.dataRequest2.http
     kvs2 = merge(courseData1,courseData2)
   } yield CalmDb.export(kvs2)
 }

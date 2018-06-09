@@ -1,10 +1,5 @@
 package org.gbz.calm.model
-import org.gbz.calm.CalmEnums.Genders._
-import org.gbz.calm.CalmEnums.Roles._
 import org.gbz.calm.CalmEnums.{toString => _, _}
-import org.gbz.calm.Global._
-import org.json4s._
-import org.json4s.jackson.JsonMethods.parse
 
 case class ApplicantRecord(cId: String, aId: Int, displayId: String, givenName: String, familyName: String,
                            age: Int, gender: Gender, role: Role, pregnant: Boolean,
