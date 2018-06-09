@@ -2,9 +2,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
 import org.gbz.Extensions._
-import org.gbz.calm.CalmEnums._
-import org.gbz.calm.CalmModel.ApplicantJsonRecord
 import org.gbz.calm._
+import org.gbz.calm.model.{CourseList, CourseListRequest}
 import utest._
 
 import scala.concurrent.Await
@@ -49,16 +48,14 @@ object CalmTests extends TestSuite{
         rc.keys("*.app").get.flatten.map(rc.hgetall1(_)).map(_.get).filter(_("familyName").contains("Кир")).mkString("\n").trace
       })
     }
-
-    import org.gbz.calm.CalmModel._
     'Calm - {
-      val request = implicitly[CalmRequest[CourseList]]
+      val request = CourseListRequest
       Timer(Calm.redisCourseList.c10d.dullabha.finished)(_.trace)(cs =>
         cs.courses.sortBy(_.start).mkString("\n").log)
     }
 
     'CourseList - {
-      val request = implicitly[CalmRequest[CourseList]]
+      val request = CourseListRequest
       for {
               httpCourseList <- Calm.http[CourseList](request)
               _ = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")

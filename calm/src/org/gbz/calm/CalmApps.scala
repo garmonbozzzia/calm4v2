@@ -3,7 +3,7 @@ package org.gbz.calm
 import akka.stream.scaladsl.{Sink, Source}
 import Global._
 import org.gbz.Extensions._
-import org.gbz.calm.CalmModel.CourseRecord
+import org.gbz.calm.model.CourseRecord
 
 /* Created on 05.05.18 */
 
