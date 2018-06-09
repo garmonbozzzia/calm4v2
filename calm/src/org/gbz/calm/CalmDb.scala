@@ -4,10 +4,10 @@ import cakesolutions.kafka.{KafkaProducer, KafkaProducerRecord}
 import com.redis.{RedisClient, RedisClientPool}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
-import org.gbz.calm.CalmModel._
 import org.json4s.jackson.Serialization.write
 import org.gbz.Extensions._
 import Global._
+import org.gbz.calm.model.{AppList, ApplicantRecord, CourseList, CourseRecord}
 
 object CalmDb {
   val redisClient = new RedisClient("localhost", 6379, 1)

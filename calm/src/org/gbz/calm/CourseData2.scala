@@ -1,7 +1,7 @@
 package org.gbz.calm
 
-import org.gbz.calm.CalmModel._
 import org.gbz.calm.Global._
+import org.gbz.calm.model._
 
 object CourseData2 {
   import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
@@ -44,7 +44,7 @@ object CourseData2 {
 
   def dataRequest1(cId: String) = new CalmRequest[AppList] {
     override def uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String) = AppList(CalmModel.extractAppList(data))
+    override def parseEntity(data: String) = AppList(AppListParser.extractAppList(data))
     override def headers = Calm.xmlHeaders
   }
 

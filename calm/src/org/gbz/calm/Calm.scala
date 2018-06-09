@@ -8,6 +8,7 @@ import akka.util.ByteString
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 import org.gbz.calm.Global._
+import org.gbz.calm.model._
 
 import scala.concurrent.Future
 
@@ -21,7 +22,6 @@ object Calm {
   val xmlHeaders = scala.collection.immutable.Seq(accept,xml,referer)
 
   import CalmDb._
-  import CalmModel._
 
   val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
     .withBootstrapServers("localhost:9092")
