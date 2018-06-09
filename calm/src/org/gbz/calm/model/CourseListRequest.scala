@@ -1,14 +1,26 @@
 package org.gbz.calm.model
 
 import akka.http.scaladsl.model.Uri
+import com.redis.RedisClient
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
 import org.gbz.calm.CalmEnums.{CourseTypes, CourseVenues}
 import org.gbz.calm.Global._
-import org.gbz.calm.{CalmUri, Parsers}
+import org.gbz.calm.{CalmDb, CalmUri, Parsers}
 import org.json4s.jackson.JsonMethods.parse
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.gbz.Extensions._
+
+trait RedisObject
+
+trait RedisRequest[T <: RedisObject] {
+  def key: String
+  def fromMap: Map[String,String] => Option[T]
+  def load: Option[T] = for {
+    dataMap <- CalmDb.redisClient.hgetall1(key)
+    result <- fromMap(dataMap)
+  } yield result
+}
 
 object CourseListRequest extends CalmRequest[CourseList] {
   override def uri: Uri = CalmUri.coursesUri()
