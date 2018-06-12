@@ -21,3 +21,11 @@ trait CalmRequest[Entity]{
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
     } yield parseEntity(json.utf8String)
 }
+
+object CalmRequest {
+  type CourseId = String
+  def allCourses: CourseListRequest.type = CourseListRequest
+  def courseAppsHtml(cId: CourseId) = AppListRequests.fromHtml(cId)
+  def courseAppsJson(cId: CourseId) = AppListRequests.fromJson(cId)
+  def courseApps(cId: CourseId) = ???
+}
