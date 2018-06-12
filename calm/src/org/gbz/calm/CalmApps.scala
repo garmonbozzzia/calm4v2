@@ -11,7 +11,7 @@ object CalmApps extends App {
   def loadApps = {
     val c10ds = Calm.redisCourseList.c10d.dullabha.finished
     Source.fromIterator(() => c10ds.courses.iterator)
-      .map(_.traceWith(_.cId).dataRequest1)
+      .map(_.traceWith(_.cId).appListRequest1)
       .mapAsync(1)(_.http)
       .runForeach(x => CalmDb.update(x))
   }

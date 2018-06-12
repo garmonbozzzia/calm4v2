@@ -5,9 +5,9 @@ import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model.{HttpHeader, Uri}
 import akka.util.ByteString
 import org.gbz.calm.Authentication
+import org.gbz.calm.Global._
 
 import scala.concurrent.Future
-import org.gbz.calm.Global._
 
 trait CalmRequest[Entity]{
   def uri: Uri
@@ -20,5 +20,4 @@ trait CalmRequest[Entity]{
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
     } yield parseEntity(json.utf8String)
-
 }

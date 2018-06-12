@@ -9,6 +9,7 @@ import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import org.gbz.Extensions._
 import org.json4s._
 
+import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 
@@ -50,7 +51,7 @@ object Global {
     constructorMirror(constructorArgs:_*).asInstanceOf[T]
   }
 
-  def toImmutable[A](elements: Iterable[A]) =
+  def toImmutable[A](elements: Iterable[A]): immutable.Iterable[A] =
     new scala.collection.immutable.Iterable[A] {
       override def iterator: Iterator[A] = elements.toIterator
     }

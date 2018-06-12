@@ -11,6 +11,6 @@ object CourseRecord {
 }
 case class CourseRecord(cId: String, start: String, end: String,
                         cType: CourseType, venue: CourseVenue, status: String) {
-  val dataRequest1 = CourseData2.dataRequest1(cId)
-  val dataRequest2 = CourseData2.dataRequest2(cId)
+  val appListRequest1 = AppListRequests.fromJson(cId)
+  val appListRequest2 = AppListRequests.fromHtml(cId)
 }
