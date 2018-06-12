@@ -5,30 +5,33 @@ import org.gbz.calm.Global.browser
 import org.gbz.calm.model.AppListRequests.AppList2
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.elementList
+import org.gbz.calm.Global
+
+import scala.collection.immutable
+import scala.util.Try
+
+case class ApplicantHtmlRecord (receivedAt: String, displayId: String, birthDate: String, email: String,
+                                phoneHome: String, phoneMobile: String, enrolledAt: String, dismissedAt: String)
+
+import org.gbz.Extensions._
+
+object ApplicantHtmlRecord {
+  def apply(data: Map[String, String]): Option[ApplicantHtmlRecord] = Try{ new ApplicantHtmlRecord(
+    receivedAt = data("app_rcvd"),
+    displayId = data("display_id").replace("*",""),
+    birthDate = data("birth_date"),
+    phoneHome = data("phone_home"),
+    phoneMobile = data("phone_mobile"),
+    email = data("email"),
+    enrolledAt = data("incremented_enrolled_quota_at"),
+    dismissedAt = data("decremented_enrolled_quota_at")
+  )}.fold(e => None.trace(e), Some(_))
+}
 
 object AppListHtmlParser {
-  val fields = List(
-    "app_rcvd",
-    "display_id",
-    "birth_date",
-    "phone_home",
-    "phone_mobile",
-    "email",
-    "incremented_enrolled_quota_at",
-    "decremented_enrolled_quota_at"
-  )
 
-  val fieldsRename = Map(
-    "app_rcvd" -> "receivedAt",
-    "phone_home" -> "phoneHome",
-    "phone_mobile" -> "phoneMobile",
-    "incremented_enrolled_quota_at" -> "enrolled",
-    "decremented_enrolled_quota_at" -> "dismissed"
-  )
-
-  def parse(data: String): AppList2 = (browser.parseString(data) >> elementList("tbody"))
+  def parse(data: String) = (browser.parseString(data) >> elementList("tbody"))
     .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
-    .map(_.filterKeys(fields.contains).map { case (k, v) => fieldsRename.getOrElse(k, k) -> v })
-    .map(x => x("display_id").replace("*","") -> x).toMap
-    .|>(AppList2(_))
+    .map(x => ApplicantHtmlRecord(x)).flatten
+    .map(x => x.displayId -> x).toMap
 }

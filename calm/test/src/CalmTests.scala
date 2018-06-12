@@ -114,7 +114,7 @@ object CalmTests extends TestSuite{
     'CourseData - {
       val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
       for {
-        courseData <- AppListRequests.fromJson(course.cId).http
+        courseData <- AppListRequests.merged(course.cId)
         _ = CalmDb.update(courseData)
         //allApps = Calm.loadCourseApps(course.cId)
       } yield courseData.apps.mkString("\n").log

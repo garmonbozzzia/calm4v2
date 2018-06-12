@@ -1,52 +1,49 @@
 package org.gbz.calm.model
 
 import akka.http.scaladsl.model.Uri
-
+import akka.http.scaladsl.model.headers.RawHeader
+import org.apache.kafka.clients.producer.ProducerRecord
 import org.gbz.calm.Global._
 import org.gbz.calm.{Calm, CalmDb, CalmUri}
 
+import scala.collection.immutable
 import scala.concurrent.Future
-import org.gbz.Extensions._
 
 
 
 object AppListRequests {
   type CourseId = String
-  case class AppList2(apps: Map[String, Map[String,String]])
-  def fromHtml(cId: String): CalmRequest[AppList2] = new CalmRequest[AppList2] {
+  type AppList1 = Seq[ApplicantRecord]
+  type AppList2 = Map[DisplayId, ApplicantHtmlRecord]
+
+  def fromHtml(cId: String) = new CalmRequest[AppList2] {
 
     override def uri: Uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String): AppList2 = AppListHtmlParser.parse(data)
+    override def parseEntity(data: String) = AppListHtmlParser.parse(data)
   }
 
-  def fromJson(cId: String): CalmRequest[AppList] = new CalmRequest[AppList] {
-    override def uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String) = AppList(AppListJsonParser.extractAppList(data))
-    override def headers = Calm.xmlHeaders
+  def fromJson(cId: String): CalmRequest[AppList1] = new CalmRequest[AppList1] {
+    override def uri: Uri = CalmUri.courseUri(cId.toInt)
+    override def parseEntity(data: String): Seq[ApplicantRecord] = AppListJsonParser.extractAppList(data)
+    override def headers: immutable.Seq[RawHeader] = Calm.xmlHeaders
   }
 
   import org.gbz.Extensions._
+  import ammonite.ops.Extensions._
   type DisplayId = String
-  case class MergedAppList(apps: Map[DisplayId,Map[String,String]])
 
-
-  def merge(data1: AppList, data2: AppList2 ) = {
-    val z = data1.apps
-      .map(x => x -> data2.apps(x.displayId))
-      .map { case (x, y) =>
-        (s"${x.cId}:${x.aId}-${x.displayId}.app", x.ccToMap.mapValues(_.toString) ++ (y - "display_id"))
-      }.toMap
-    MergedAppList(z)
-  }
+  def merge(data1: AppList1, data2: AppList2 ): AppList =
+    data1.map(x => MergedApplicantRecord(x, data2(x.displayId)))
+      .|>(AppList)
 
   //todo replace
-  def update(cId: CourseId) = for {
+  def update(cId: CourseId): Future[Seq[ProducerRecord[String, String]]] = for {
     courseData1 <- fromJson(cId).http
     courseData2 <- fromHtml(cId).http
     kvs2 = merge(courseData1,courseData2)
   } yield CalmDb.update(kvs2)
 
-  def merged(cId : CourseId): Future[MergedAppList] = for {
+  def merged(cId : CourseId) = for {
     courseData1 <- fromJson(cId).http
     courseData2 <- fromHtml(cId).http
   } yield merge(courseData1,courseData2)

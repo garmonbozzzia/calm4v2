@@ -36,6 +36,6 @@ object Calm {
   def redisAllApps = AppList(redisClientPool.withClient{ client =>
     client.keys("*:*.app").get.flatten
       .map(client.hgetall1(_)).flatten
-      .map(ApplicantRecord(_))
+      .map(MergedApplicantRecord(_)).flatten
   })
 }
