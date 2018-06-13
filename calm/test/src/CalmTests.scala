@@ -3,7 +3,7 @@ import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
 import org.gbz.Extensions._
 import org.gbz.calm._
-import org.gbz.calm.model.{AppListRequests, CourseList, CourseListRequest}
+import org.gbz.calm.model.{AppListRequests, CourseListRequest}
 import utest._
 
 import scala.concurrent.Await
@@ -11,7 +11,7 @@ import scala.concurrent.Await
 object CalmTests extends TestSuite{
   import org.gbz.calm.Global._
 
-  override def utestAfterAll()= {
+  override def utestAfterAll(): Unit = {
     import scala.concurrent.duration._
     Await.result(system.terminate(), 1 minute)
   }
@@ -116,7 +116,6 @@ object CalmTests extends TestSuite{
       for {
         courseData <- AppListRequests.merged(course.cId)
         _ = CalmDb.update(courseData)
-        //allApps = Calm.loadCourseApps(course.cId)
       } yield courseData.apps.mkString("\n").log
     }
   }
