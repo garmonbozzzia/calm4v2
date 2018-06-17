@@ -10,7 +10,7 @@ import scala.concurrent.Await
 object RedisTests extends TestSuite {
 
   import org.gbz.calm.Global._
-  import org.gbz.Extensions._
+  import org.gbz.ExtUtils._
 
   override def utestAfterAll() = {
     import scala.concurrent.duration._

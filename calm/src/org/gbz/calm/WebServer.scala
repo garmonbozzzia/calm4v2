@@ -33,7 +33,7 @@ object UserDataProcessor{
 object WebServer {
   def main(args: Array[String]) {
     import scala.concurrent.duration._
-    import org.gbz.Extensions._
+    import org.gbz.ExtUtils._
 
     val cId = 4053
     def greeter: Flow[Message, Message, Any] = Flow.fromSinkAndSource(Sink.foreach{

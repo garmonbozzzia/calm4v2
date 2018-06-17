@@ -1,7 +1,7 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
-import org.gbz.Extensions._
+import org.gbz.ExtUtils._
 import org.gbz.calm._
 import org.gbz.calm.model.{AppListRequests, CourseListRequest}
 import utest._

@@ -9,7 +9,7 @@ import org.apache.kafka.common.serialization._
 import utest._
 
 object KafkaTest extends TestSuite {
-  import org.gbz.Extensions._
+  import org.gbz.ExtUtils._
   import org.gbz.calm.Global._
   val tests = Tests {
     'Hello - {

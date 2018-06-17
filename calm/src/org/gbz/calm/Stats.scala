@@ -2,7 +2,7 @@ package org.gbz.calm
 
 /* Created on 09.05.18 */
 object Stats {
-  import org.gbz.Extensions._
+  import org.gbz.ExtUtils._
   def run = {
     val allApps = Calm.redisAllApps
     //allApps.apps.foreach(_.log)
