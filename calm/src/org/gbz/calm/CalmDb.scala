@@ -5,7 +5,7 @@ import com.redis.{RedisClient, RedisClientPool}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import org.json4s.jackson.Serialization.write
-import org.gbz.Extensions._
+import org.gbz.ExtUtils._
 import Global._
 import org.gbz.calm.model.{AppList, ApplicantRecord, CourseList, CourseRecord}
 

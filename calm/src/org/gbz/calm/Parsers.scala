@@ -1,7 +1,7 @@
 package org.gbz.calm
 
 import fastparse.all._
-import org.gbz.Extensions._
+import org.gbz.ExtUtils._
 
 trait ParsersUtils {
   val id = P(CharIn('0'to'9').rep(1).!.map(_.toInt))

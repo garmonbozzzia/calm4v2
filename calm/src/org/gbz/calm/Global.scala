@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}
 import ammonite.ops.{Path, pwd}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
-import org.gbz.Extensions._
+import org.gbz.ExtUtils._
 import org.json4s._
 
 import scala.collection.immutable

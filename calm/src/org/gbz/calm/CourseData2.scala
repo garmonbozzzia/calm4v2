@@ -5,7 +5,7 @@ import org.gbz.calm.model.AppListRequests.AppList2
 import org.gbz.calm.model._
 
 object CourseData2 {
-  import org.gbz.Extensions._
+  import org.gbz.ExtUtils._
 
   def update(course: CourseRecord) =
     AppListRequests.merged(course.cId).map(x => CalmDb.update(x.ccToMap))

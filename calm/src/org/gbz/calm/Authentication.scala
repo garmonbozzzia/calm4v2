@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
 
 import scala.concurrent.{Future, Promise}
-import org.gbz.Extensions._
+import org.gbz.ExtUtils._
 import Global._
 
 object Authentication {

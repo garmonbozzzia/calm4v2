@@ -13,7 +13,7 @@ import scala.util.Try
 case class ApplicantHtmlRecord (receivedAt: String, displayId: String, birthDate: String, email: String,
                                 phoneHome: String, phoneMobile: String, enrolledAt: String, dismissedAt: String)
 
-import org.gbz.Extensions._
+import org.gbz.ExtUtils._
 
 object ApplicantHtmlRecord {
   def apply(data: Map[String, String]): Option[ApplicantHtmlRecord] = Try{ new ApplicantHtmlRecord(
