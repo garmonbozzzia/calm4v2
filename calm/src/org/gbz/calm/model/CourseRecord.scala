@@ -9,8 +9,6 @@ object CourseRecord {
     CourseVenues.withName(map("venue")), map("status")
   )
 }
+
 case class CourseRecord(cId: String, start: String, end: String,
-                        cType: CourseType, venue: CourseVenue, status: String) {
-  val dataRequest1 = CourseData2.dataRequest1(cId)
-  val dataRequest2 = CourseData2.dataRequest2(cId)
-}
+                        cType: CourseType, venue: CourseVenue, status: String)

@@ -20,7 +20,9 @@ object CalmDb {
 
   def update(keyPattern: String, data: Map[String, String]): RedisClient => Diff = rc => {
     rc.keys[String](keyPattern) match {
-      case Some(Nil) => NewKey(keyPattern) <* rc.hmset(keyPattern, data)
+      case Some(Nil) =>
+        rc.hmset(keyPattern, data)
+        NewKey(keyPattern)
       case Some(Seq(Some(key))) =>
         val oldData = rc.hgetall1(key).get
         val changes = data.map {

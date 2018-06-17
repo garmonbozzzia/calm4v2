@@ -3,7 +3,7 @@ import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
 import org.gbz.Extensions._
 import org.gbz.calm._
-import org.gbz.calm.model.{CourseList, CourseListRequest}
+import org.gbz.calm.model.{AppListRequests, CourseListRequest}
 import utest._
 
 import scala.concurrent.Await
@@ -11,7 +11,7 @@ import scala.concurrent.Await
 object CalmTests extends TestSuite{
   import org.gbz.calm.Global._
 
-  override def utestAfterAll()= {
+  override def utestAfterAll(): Unit = {
     import scala.concurrent.duration._
     Await.result(system.terminate(), 1 minute)
   }
@@ -76,7 +76,7 @@ object CalmTests extends TestSuite{
         .diff(Calm.redisAllApps.apps.map(_.cId).distinct).trace
       Source.fromIterator(() => c10ds.courses.iterator)
         .filter(x => newCourses.contains(x.cId))
-        .map(_.traceWith(_.cId).dataRequest1)
+        .map(c => AppListRequests.fromJson(c.cId))
         .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.export(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
@@ -85,7 +85,7 @@ object CalmTests extends TestSuite{
     'LoadApps - {
       val c10ds = Calm.redisCourseList.c10d.dullabha.finished
       Source.fromIterator(() => c10ds.courses.iterator)
-        .map(_.traceWith(_.cId).dataRequest1)
+        .map(c => AppListRequests.fromJson(c.cId))
         .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.update(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
@@ -114,9 +114,8 @@ object CalmTests extends TestSuite{
     'CourseData - {
       val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
       for {
-        courseData <- course.dataRequest1.http
+        courseData <- AppListRequests.merged(course.cId)
         _ = CalmDb.update(courseData)
-        //allApps = Calm.loadCourseApps(course.cId)
       } yield courseData.apps.mkString("\n").log
     }
   }

@@ -9,7 +9,7 @@ import org.gbz.calm.Global._
 import org.json4s._
 import org.json4s.jackson.JsonMethods.parse
 
-object AppListParser {
+object AppListJsonParser {
   case class ApplicantJsonRecord(id: Int, display_id: String, applicant_given_name: String, applicant_family_name: String,
                                  age: Option[Int], sitting: Boolean, old: Boolean, conversation_locale: String,
                                  language_native: String, ad_hoc: String, pregnant: Boolean, courses_sat: Option[Int],

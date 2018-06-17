@@ -4,6 +4,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import org.gbz.Extensions._
 
+import scala.collection.immutable
 import scala.language.implicitConversions
 
 /**
@@ -14,7 +15,7 @@ object CalmUri {
   private val ks = Seq("[data]", "[name]", "[searchable]", "[orderable]", "[search][value]", "[search][regex]")
   private val vs = Seq("", true, true, "", false).map(_.toString)
 
-  private def columnParams(n: Int) = for{
+  private def columnParams(n: Int): immutable.Seq[(String, String)] = for{
     i <- (0 to n).toList
     (x,y) <- ks.zip(i.toString +: vs)
   } yield s"columns[$i]$x" -> y
