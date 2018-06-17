@@ -1,14 +1,16 @@
 package org.gbz.calm.model
 
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.{HttpHeader, Uri}
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
-import org.gbz.calm.CalmEnums.{CourseTypes, CourseVenues}
 import org.gbz.ExtUtils._
+import org.gbz.calm.CalmEnums.{CourseTypes, CourseVenues, CourseStatuses}
 import org.gbz.calm.Global._
-import org.gbz.calm.{CalmDb, CalmUri, Parsers}
+import org.gbz.calm.{Calm, CalmDb, CalmUri, Parsers}
 import org.json4s.jackson.JsonMethods.parse
+
+import scala.collection.immutable
 
 trait RedisObject
 
@@ -23,7 +25,9 @@ trait RedisRequest[T <: RedisObject] {
 
 object CourseListRequest extends CalmRequest[CourseList] {
   override def uri: Uri = CalmUri.coursesUri()
-  override def parseEntity( data: String) =
+
+  override def headers: immutable.Seq[HttpHeader] = Calm.xmlHeaders
+  override def parseEntity( data: String): CourseList =
     CourseList((parse(data) \ "data").extract[Seq[Seq[String]]].map(parseCourseRecord).flatten)
   import Parsers._
 
@@ -33,8 +37,12 @@ object CourseListRequest extends CalmRequest[CourseList] {
       for {
         href <- html >?> attr(attr = "href")("a")
         id <- courseIdParser.fastParse(href)
-      } yield CourseRecord( id.toString, (html >> text).replace("*",""), end, CourseTypes.withName(cType),
-        CourseVenues.withName(venue), status)
+      } yield CourseRecord( id, (html >> text).replace("*",""), end, CourseTypes.withName(cType),
+        CourseVenues.withName(venue), CourseStatuses.withName(status))
     case x => x.trace; throw new Exception("error".trace)
   }
 }
+
+//CsLs = Coll[CsRec]
+//CsLsRq => Future[Coll[CsRec]]
+//CsRec

@@ -44,9 +44,10 @@ object server extends CommonModule {
 }
 
 object calm extends CommonModule {
-  def moduleDeps = Seq(utils)
+  override def moduleDeps = Seq(utils)
 
-  def ivyDeps = Agg(
+  override def mainClass = Some("org.gbz.calm.CalmApps")
+  override def ivyDeps = Agg(
     ivy"com.typesafe.akka::akka-stream-kafka:0.20",
     ivy"com.lightbend::kafka-streams-scala:0.2.1",
     ivy"org.scala-lang:scala-reflect:2.12.4",

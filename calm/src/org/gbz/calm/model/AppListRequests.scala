@@ -12,23 +12,21 @@ import scala.concurrent.Future
 
 
 object AppListRequests {
-  type CourseId = String
   type AppList1 = Seq[ApplicantRecord]
   type AppList2 = Map[DisplayId, ApplicantHtmlRecord]
 
-  def fromHtml(cId: String) = new CalmRequest[AppList2] {
+  def fromHtml(cId: CourseId): CalmRequest[AppList2] = new CalmRequest[AppList2] {
 
     override def uri: Uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String) = AppListHtmlParser.parse(data)
+    override def parseEntity(data: String): Map[String, ApplicantHtmlRecord] = AppListHtmlParser.parse(data)
   }
 
-  def fromJson(cId: String): CalmRequest[AppList1] = new CalmRequest[AppList1] {
+  def fromJson(cId: CourseId): CalmRequest[AppList1] = new CalmRequest[AppList1] {
     override def uri: Uri = CalmUri.courseUri(cId.toInt)
     override def parseEntity(data: String): Seq[ApplicantRecord] = AppListJsonParser.extractAppList(data)
     override def headers: immutable.Seq[RawHeader] = Calm.xmlHeaders
   }
 
-  import org.gbz.Extensions._
   import ammonite.ops.Extensions._
   type DisplayId = String
 

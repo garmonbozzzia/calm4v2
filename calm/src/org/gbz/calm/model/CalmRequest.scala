@@ -6,6 +6,8 @@ import akka.http.scaladsl.model.{HttpHeader, Uri}
 import akka.util.ByteString
 import org.gbz.calm.Authentication
 import org.gbz.calm.Global._
+import org.gbz.ExtUtils._
+import org.gbz.calm.model.AppListRequests.{AppList1, AppList2}
 
 import scala.concurrent.Future
 
@@ -19,13 +21,12 @@ trait CalmRequest[Entity]{
       request = Get(uri).withHeaders(auth +: headers)
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield parseEntity(json.utf8String)
+    } yield parseEntity(json.utf8String.trace)
 }
 
 object CalmRequest {
-  type CourseId = String
   def allCourses: CourseListRequest.type = CourseListRequest
-  def courseAppsHtml(cId: CourseId) = AppListRequests.fromHtml(cId)
-  def courseAppsJson(cId: CourseId) = AppListRequests.fromJson(cId)
+  def courseAppsHtml(cId: CourseId): CalmRequest[AppList2] = AppListRequests.fromHtml(cId)
+  def courseAppsJson(cId: CourseId): CalmRequest[AppList1] = AppListRequests.fromJson(cId)
   def courseApps(cId: CourseId) = ???
 }

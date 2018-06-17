@@ -11,7 +11,6 @@ case class AppList(apps: Seq[MergedApplicantRecord]) {
   def filterT[V](extractor: MergedApplicantRecord => V)(st: V*) =
     AppList(apps.filter(x => st.contains(extractor(x))))
 
-  //    def n = AppList(apps.filter(_.role == NewStudent))
   def n: AppList = filterT(_.role)(NewStudent)
   def o: AppList = filterT(_.role)(OldStudent)
   def s: AppList = filterT(_.role)(Server)

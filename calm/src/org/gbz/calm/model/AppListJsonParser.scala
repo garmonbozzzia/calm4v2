@@ -15,7 +15,7 @@ object AppListJsonParser {
                                  language_native: String, ad_hoc: String, pregnant: Boolean, courses_sat: Option[Int],
                                  courses_served: Option[Int], room: String,
                                  hall_position: String, confirmation_state_name: String) {
-    def app(cId: String, role: Role, gender: Gender) =
+    def app(cId: CourseId, role: Role, gender: Gender) =
       ApplicantRecord(cId, id,display_id,applicant_given_name, applicant_family_name,
         age.getOrElse(-1), gender, role, pregnant, courses_sat.getOrElse(0), courses_served.getOrElse(0),
         ApplicantStates.withName(confirmation_state_name))
@@ -37,7 +37,7 @@ object AppListJsonParser {
     val json = parse(data)
     val cId = (json\"course_id").extract[Int]
     def f(jsonArray: JValue, role: Role, gender: Gender ) =
-      jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId.toString, role, gender))
+      jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId, role, gender))
     f(json \ "sitting" \ "male" \ "new", NewStudent, Male ) ++
       f(json \ "sitting" \ "male" \ "old", OldStudent, Male) ++
       f(json \ "sitting" \ "female" \ "new", NewStudent, Female) ++

@@ -30,7 +30,7 @@ object ApplicantHtmlRecord {
 
 object AppListHtmlParser {
 
-  def parse(data: String) = (browser.parseString(data) >> elementList("tbody"))
+  def parse(data: String): Map[String, ApplicantHtmlRecord] = (browser.parseString(data) >> elementList("tbody"))
     .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
     .map(x => ApplicantHtmlRecord(x)).flatten
     .map(x => x.displayId -> x).toMap
