@@ -2,7 +2,7 @@ package org.gbz
 
 import ammonite.ops._
 
-object Extensions {
+object ExtUtils {
 //  implicit class FastParseW[T](val parser: Parser[T]) extends AnyVal {
 //    def fastParse(data: String): Option[T] = parser.parse(data) match {
 //      case Parsed.Success(x, _) => Some(x)
@@ -29,6 +29,8 @@ object Extensions {
   }
 
   implicit class TransformImplicit[T](val obj: T) extends AnyVal {
+    def iapl[B](f: T => B): T = {f(obj); obj}
+    def rapl[B](f: T => B): B = f(obj)
     def <|[B](f: T => B): T = {f(obj); obj}
     def <*[B](expr: => B): T = {expr; obj}
     def |?>(condition: Boolean)(transform: T => T): T =
