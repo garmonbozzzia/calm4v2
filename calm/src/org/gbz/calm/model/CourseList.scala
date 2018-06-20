@@ -1,9 +1,10 @@
 package org.gbz.calm.model
 
-import org.gbz.calm.CalmEnums.{CourseType, CourseTypes, CourseVenue, CourseVenues}
+import org.gbz.calm.CalmEnums.{CourseStatuses, CourseType, CourseTypes, CourseVenue, CourseVenues}
 
 case class CourseList(courses: Seq[CourseRecord]){
   import CourseTypes._
+  import CourseStatuses._
   def cType(cTypes: CourseType*) = CourseList(courses.filter(x => cTypes.contains(x.cType)))
   def c10d: CourseList = cType(C10d)
   def c3d: CourseList = cType(C3d)
@@ -13,6 +14,7 @@ case class CourseList(courses: Seq[CourseRecord]){
   def venue(vs: CourseVenue*) = CourseList(courses.filter(x => vs.contains(x.venue)))
   def dullabha: CourseList = venue(CourseVenues.DD)
   def ekb: CourseList = venue(CourseVenues.Ekb)
-  def finished = CourseList(courses.filter(_.status == "Finished"))
-  def scheduled = CourseList(courses.filter(_.status == "Scheduled"))
+  def finished = CourseList(courses.filter(_.status == Finished))
+  def scheduled = CourseList(courses.filter(_.status == NotOpened))
+  def inProgress = CourseList(courses.filter(_.status == InProgress))
 }

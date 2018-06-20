@@ -7,7 +7,8 @@ import org.apache.kafka.common.serialization.StringSerializer
 import org.json4s.jackson.Serialization.write
 import org.gbz.ExtUtils._
 import Global._
-import org.gbz.calm.model.{AppList, ApplicantRecord, CourseList, CourseRecord}
+import com.redis.serialization.Format
+import org.gbz.calm.model._
 
 object CalmDb {
   val redisClient = new RedisClient("localhost", 6379, 1)
@@ -53,5 +54,9 @@ object CalmDb {
       case NewKey(k) => k -> s"NewKey $k"
       case x@FieldChanges(key, fields) => key -> s"ChangeFields $key ${write(fields)}"
     }.map{case (k,v) => KafkaProducerRecord(updateTopic, Some(k), v)}.map(_ <| producer.send)
+  }
+
+  implicit val format = Format{
+    case d: CourseDate => d.toString.getBytes("UTF-8")
   }
 }

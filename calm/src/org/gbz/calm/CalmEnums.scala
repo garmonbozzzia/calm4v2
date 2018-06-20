@@ -62,6 +62,8 @@ object CalmEnums {
     val Finished = Value("Finished")
     val InProgress = Value("In Progress")
     val NotOpened = Value("Not opened")
+    val Scheduled = Value("Scheduled")
+    val Tentative = Value("Tentative")
   }
 
 

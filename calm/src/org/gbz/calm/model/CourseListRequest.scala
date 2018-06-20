@@ -5,7 +5,7 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
 import org.gbz.ExtUtils._
-import org.gbz.calm.CalmEnums.{CourseTypes, CourseVenues, CourseStatuses}
+import org.gbz.calm.CalmEnums.{CourseStatuses, CourseTypes, CourseVenues}
 import org.gbz.calm.Global._
 import org.gbz.calm.{Calm, CalmDb, CalmUri, Parsers}
 import org.json4s.jackson.JsonMethods.parse
@@ -37,7 +37,8 @@ object CourseListRequest extends CalmRequest[CourseList] {
       for {
         href <- html >?> attr(attr = "href")("a")
         id <- courseIdParser.fastParse(href)
-      } yield CourseRecord( id, (html >> text).replace("*",""), end, CourseTypes.withName(cType),
+      } yield CourseRecord( id, (html >> text).replace("*","") |> CourseDate.apply,
+        CourseDate(end), CourseTypes.withName(cType),
         CourseVenues.withName(venue), CourseStatuses.withName(status))
     case x => x.trace; throw new Exception("error".trace)
   }

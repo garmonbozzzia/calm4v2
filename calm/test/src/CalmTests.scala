@@ -17,23 +17,6 @@ object CalmTests extends TestSuite{
   }
 
   val tests = Tests{
-    'Sandbox - {
-      object Enum extends Enumeration {
-        val Red = Value("red")
-        val Blue = Value("blue")
-      }
-
-      Enum.withName("red").trace
-      Enum.withName("green")
-    }
-
-    'GoogleTest - {
-      val a = for{
-        result <- Http().singleRequest(Get("https://google.com/"))
-        _ <- result.traceWith(_.status).discardEntityBytes().future()
-      } yield result
-      a.foreach(_.trace)
-    }
 
     'SignIn - {
       for {

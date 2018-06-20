@@ -2,8 +2,11 @@ package org.gbz.calm
 
 import akka.stream.scaladsl.{Sink, Source}
 import Global._
+import akka.Done
 import org.gbz.ExtUtils._
 import org.gbz.calm.model.{AppListRequests, CourseListRequest, CourseRecord}
+
+import scala.concurrent.Future
 
 /* Created on 05.05.18 */
 
@@ -21,14 +24,14 @@ object CalmApps extends App {
         }
 
     case Some("loadAllApps") =>
-      def loadApps = {
+      def loadApps: Future[Done] = {
         val c10ds = Calm.redisCourseList.c10d.dullabha.finished
         Source.fromIterator(() => c10ds.courses.iterator)
           .map(c => AppListRequests.fromJson(c.cId))
           .mapAsync(1)(_.http)
           .runForeach(x => CalmDb.update(x))
       }
-      def tick = Source.tick(0 second, 1 minute, courses.courses)
+      def tick: Future[Done] = Source.tick(0 second, 1 minute, courses.courses)
         .map(_.trace)
         .mapConcat[CourseRecord](toImmutable)
         //    .mapAsync(1)(Calm.http)

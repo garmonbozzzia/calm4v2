@@ -25,9 +25,6 @@ object Global {
   val browser = JsoupBrowser()
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  val timezoneDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z")
-  val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
-
   implicit val logs: Path = pwd/'data/'logs/"log.txt"
 
 
