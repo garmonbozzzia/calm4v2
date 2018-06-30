@@ -34,7 +34,7 @@ object CalmTests extends TestSuite{
     'Calm - {
       val request = CourseListRequest
       Timer(Calm.redisCourseList.c10d.dullabha.finished)(_.trace)(cs =>
-        cs.courses.sortBy(_.start).mkString("\n").log)
+        cs.courses.sortBy(_.start.toString).mkString("\n").log)
     }
 
     'CourseList - {

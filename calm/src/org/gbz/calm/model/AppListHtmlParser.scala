@@ -10,13 +10,16 @@ import org.gbz.calm.Global
 import scala.collection.immutable
 import scala.util.Try
 
-case class ApplicantHtmlRecord (receivedAt: String, displayId: String, birthDate: String, email: String,
-                                phoneHome: String, phoneMobile: String, enrolledAt: String, dismissedAt: String)
+case class ApplicantHtmlRecord (familyName: String, givenName: String, receivedAt: String, displayId: String,
+                                birthDate: String, email: String, phoneHome: String, phoneMobile: String,
+                                enrolledAt: String, dismissedAt: String)
 
 import org.gbz.ExtUtils._
 
 object ApplicantHtmlRecord {
   def apply(data: Map[String, String]): Option[ApplicantHtmlRecord] = Try{ new ApplicantHtmlRecord(
+    familyName = data("family_name"),
+    givenName = data("given_name"),
     receivedAt = data("app_rcvd"),
     displayId = data("display_id").replace("*",""),
     birthDate = data("birth_date"),

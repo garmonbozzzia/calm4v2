@@ -21,7 +21,7 @@ trait CalmRequest[Entity]{
       request = Get(uri).withHeaders(auth +: headers)
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield parseEntity(json.utf8String.trace)
+    } yield parseEntity(json.utf8String)
 }
 
 object CalmRequest {
