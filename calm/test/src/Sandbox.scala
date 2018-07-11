@@ -24,7 +24,7 @@ object Sandbox extends TestSuite{
 
       Enum.withName("red").trace.id.trace
       Enum(Enum.withName("blue").trace.id.trace).trace
-      Enum.withName("green")
+//      Enum.withName("green")
     }
 
     'GoogleTest - {

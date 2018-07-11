@@ -27,7 +27,7 @@ object CourseListRequest extends CalmRequest[CourseList] {
   override def uri: Uri = CalmUri.coursesUri()
 
   override def headers: immutable.Seq[HttpHeader] = Calm.xmlHeaders
-  override def parseEntity( data: String): CourseList =
+  def parseEntity( data: String): CourseList =
     CourseList((parse(data) \ "data").extract[Seq[Seq[String]]].map(parseCourseRecord).flatten)
   import Parsers._
 

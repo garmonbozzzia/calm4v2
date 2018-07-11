@@ -33,7 +33,7 @@ object AppListJsonParser {
 
   case class CourseDataOnly(course_id: Int, venue_name: String, start_date: String, end_date: String)
 
-  def extractAppList(data: String) = {
+  def extractAppList(data: String): Seq[ApplicantRecord] = {
     val json = parse(data)
     val cId = (json\"course_id").extract[Int]
     def f(jsonArray: JValue, gender: Gender, role: Role ) =

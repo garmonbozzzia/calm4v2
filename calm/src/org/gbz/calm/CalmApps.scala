@@ -14,6 +14,7 @@ object CalmApps extends App {
   def courseTypes = Calm.redisCourseList.c10d.dullabha.courses.map(_.status).distinct
 
   import scala.concurrent.duration._
+  import org.gbz.calm.model.Parser._
 
   args.lift(0) match {
     case Some("loadCourses") =>
