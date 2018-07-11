@@ -1,13 +1,9 @@
 package org.gbz.calm.model
 
-import net.ruippeixotog.scalascraper.scraper.ContentExtractors.elementList
-import org.gbz.calm.Global.browser
-import org.gbz.calm.model.AppListRequests.AppList2
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.elementList
-import org.gbz.calm.Global
+import org.gbz.calm.Global.browser
 
-import scala.collection.immutable
 import scala.util.Try
 
 case class ApplicantHtmlRecord (receivedAt: String, displayId: String, birthDate: String, email: String,
@@ -31,7 +27,8 @@ object ApplicantHtmlRecord {
 object AppListHtmlParser {
 
   def parse(data: String): Map[String, ApplicantHtmlRecord] = (browser.parseString(data) >> elementList("tbody"))
-    .last.>>(elementList("tr")).map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
-    .map(x => ApplicantHtmlRecord(x)).flatten
+    .last.>>(elementList("tr"))
+    .map(_.>>(elementList("td[id]")).map(x => x.attr("id") -> x.text).toMap)
+    .flatMap(ApplicantHtmlRecord(_))
     .map(x => x.displayId -> x).toMap
 }

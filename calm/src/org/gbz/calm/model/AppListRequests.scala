@@ -9,30 +9,29 @@ import org.gbz.calm.{Calm, CalmDb, CalmUri}
 import scala.collection.immutable
 import scala.concurrent.Future
 
-
-
 object AppListRequests {
   type AppList1 = Seq[ApplicantRecord]
   type AppList2 = Map[DisplayId, ApplicantHtmlRecord]
 
   def fromHtml(cId: CourseId): CalmRequest[AppList2] = new CalmRequest[AppList2] {
-
     override def uri: Uri = CalmUri.courseUri(cId.toInt)
     override def parseEntity(data: String): Map[String, ApplicantHtmlRecord] = AppListHtmlParser.parse(data)
   }
 
   def fromJson(cId: CourseId): CalmRequest[AppList1] = new CalmRequest[AppList1] {
-    override def uri: Uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String): Seq[ApplicantRecord] = AppListJsonParser.extractAppList(data)
-    override def headers: immutable.Seq[RawHeader] = Calm.xmlHeaders
+    override def uri: Uri =
+      CalmUri.courseUri(cId.toInt)
+    override def parseEntity(data: String): Seq[ApplicantRecord] =
+      AppListJsonParser.extractAppList(data)
+    override def headers: immutable.Seq[RawHeader] =
+      Calm.xmlHeaders
   }
 
   import ammonite.ops.Extensions._
   type DisplayId = String
 
   def merge(data1: AppList1, data2: AppList2 ): AppList =
-    data1.map(x => MergedApplicantRecord(x, data2(x.displayId)))
-      .|>(AppList)
+    data1.map(x => MergedApplicantRecord(x, data2(x.displayId))).|>(AppList(_))
 
   //todo replace
   def update(cId: CourseId): Future[Seq[ProducerRecord[String, String]]] = for {
