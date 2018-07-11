@@ -3,7 +3,7 @@ package org.gbz.calm
 import akka.stream.scaladsl.{Sink, Source}
 import Global._
 import akka.Done
-import org.gbz.ExtUtils._
+import org.gbz.utils.log.Log._
 import org.gbz.calm.model.{AppListRequests, CourseListRequest, CourseRecord}
 
 import scala.concurrent.Future

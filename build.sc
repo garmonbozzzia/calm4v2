@@ -8,17 +8,30 @@ import mill.define.Target
 import mill.scalajslib._
 import mill.util.Loose
 
-trait CommonModule extends ScalaModule{
+trait ScalaModule2_12 extends ScalaModule {
   def scalaVersion = "2.12.4"
-  override def repositories =
-    super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
+}
+
+trait MacroModule extends ScalaModule2_12 {
+  override def ivyDeps = Agg(
+    ivy"org.scala-lang:scala-reflect:2.12.4"
+  )
+}
+
+trait CommonModule extends ScalaModule2_12{
+  val repos = Seq(
+    MavenRepository("https://dl.bintray.com/cakesolutions/maven/"),
+    MavenRepository("https://oss.sonatype.org/content/repositories/releases"),
+    MavenRepository("https://oss.sonatype.org/content/repositories/snapshots")
+  )
+
+  override def repositories = super.repositories ++ repos
 
   object test extends Tests{
-    override def repositories = {
-      super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
-    }
-    def ivyDeps = Agg(
+    override def repositories = super.repositories ++ repos
+    override def ivyDeps = Agg(
       ivy"com.lihaoyi::utest:0.6.4",
+      ivy"org.wvlet.airframe::airframe-log:0.50",
       ivy"com.lihaoyi::ammonite-ops:1.1.0")
 
     def testFrameworks = Seq("utest.runner.Framework")
@@ -30,17 +43,23 @@ object foo extends ScalaModule {
   override def repositories =
     super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
 
-  def ivyDeps = Agg(
+  override def ivyDeps = Agg(
     ivy"net.cakesolutions::scala-kafka-client:1.1.0"
   )
 }
 
 object utils extends CommonModule {
-  def ivyDeps = Agg(ivy"com.lihaoyi::ammonite-ops:1.1.0")
-}
-
-object server extends CommonModule {
-
+  object macroLib extends MacroModule {
+    override def ivyDeps = Agg(
+      ivy"org.scala-lang:scala-reflect:2.12.4",
+    ivy"org.wvlet.airframe::airframe-log:0.50"
+    )
+  }
+  override def moduleDeps = Seq(macroLib)
+  override def ivyDeps = Agg(
+    ivy"com.lihaoyi::ammonite-ops:1.1.0",
+    ivy"org.wvlet.airframe::airframe-log:0.50"
+  )
 }
 
 object calm extends CommonModule {
@@ -48,7 +67,8 @@ object calm extends CommonModule {
 
   override def mainClass = Some("org.gbz.calm.CalmApps")
   override def ivyDeps = Agg(
-    ivy"com.typesafe.akka::akka-stream-kafka:0.20",
+    ivy"org.wvlet.airframe::airframe-log:0.50",
+  ivy"com.typesafe.akka::akka-stream-kafka:0.20",
     ivy"com.lightbend::kafka-streams-scala:0.2.1",
     ivy"org.scala-lang:scala-reflect:2.12.4",
     ivy"com.lihaoyi::fastparse:1.0.0",
@@ -59,7 +79,9 @@ object calm extends CommonModule {
     ivy"com.typesafe.akka::akka-http:10.1.1",
     ivy"com.typesafe.akka::akka-stream:2.5.11",
     ivy"net.cakesolutions::scala-kafka-client:1.1.0",
-    ivy"net.cakesolutions::scala-kafka-client-akka:1.1.0"
+    ivy"net.cakesolutions::scala-kafka-client-akka:1.1.0",
+    ivy"ch.qos.logback:logback-classic:1.2.3",
+    ivy"com.typesafe.scala-logging::scala-logging:3.9.0"
   )
 }
 

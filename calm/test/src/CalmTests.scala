@@ -1,6 +1,7 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
+import org.gbz.utils.log.Log._
 import org.gbz.ExtUtils._
 import org.gbz.calm._
 import org.gbz.calm.model.{AppListRequests, CourseListRequest}
@@ -34,7 +35,7 @@ object CalmTests extends TestSuite{
     'Calm - {
       val request = CourseListRequest
       Timer(Calm.redisCourseList.c10d.dullabha.finished)(_.trace)(cs =>
-        cs.courses.sortBy(_.start).mkString("\n").log)
+        cs.courses.sortBy(_.start.toString).mkString("\n"))
     }
 
     'CourseList - {
@@ -99,7 +100,7 @@ object CalmTests extends TestSuite{
       for {
         courseData <- AppListRequests.merged(course.cId)
         _ = CalmDb.update(courseData)
-      } yield courseData.apps.mkString("\n").log
+      } yield courseData.apps.mkString("\n")
     }
   }
 }

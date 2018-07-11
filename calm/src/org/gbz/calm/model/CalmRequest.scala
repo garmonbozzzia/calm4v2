@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{HttpHeader, Uri}
 import akka.util.ByteString
 import org.gbz.calm.Authentication
 import org.gbz.calm.Global._
-import org.gbz.ExtUtils._
+import org.gbz.utils.log.Log._
 import org.gbz.calm.model.AppListRequests.{AppList1, AppList2}
 
 import scala.concurrent.Future

@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.{HttpHeader, Uri}
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors.attr
-import org.gbz.ExtUtils._
+import org.gbz.utils.log.Log._
 import org.gbz.calm.CalmEnums.{CourseStatuses, CourseTypes, CourseVenues}
 import org.gbz.calm.Global._
 import org.gbz.calm.{Calm, CalmDb, CalmUri, Parsers}
