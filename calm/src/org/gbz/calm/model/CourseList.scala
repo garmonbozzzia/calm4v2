@@ -1,20 +1,36 @@
 package org.gbz.calm.model
 
-import org.gbz.calm.CalmEnums.{CourseStatuses, CourseType, CourseTypes, CourseVenue, CourseVenues}
+import org.gbz.calm.CalmEnums._
+
+object CourseList{
+  trait Extractor[T] { def extractor: CourseRecord => T}
+
+  implicit val typeExt: Extractor[CourseType] = Extractor.pure(_.cType)
+  implicit val statusExt: Extractor[CourseStatus] = Extractor.pure(_.status)
+  implicit val venueExt: Extractor[CourseVenue] = Extractor.pure(_.venue)
+
+  object Extractor {
+    def apply[T](implicit extractor: Extractor[T]) = extractor
+    def pure[T](f: CourseRecord => T) = new Extractor[T] {def extractor = f}
+  }
+}
 
 case class CourseList(courses: Seq[CourseRecord]){
+  import CourseList._
   import CourseTypes._
   import CourseStatuses._
-  def cType(cTypes: CourseType*) = CourseList(courses.filter(x => cTypes.contains(x.cType)))
-  def c10d: CourseList = cType(C10d)
-  def c3d: CourseList = cType(C3d)
-  def c1d: CourseList = cType(C1d)
-  def sati: CourseList = cType(Sati)
-  def all: CourseList = cType(C10d, C3d, C1d, Sati)
-  def venue(vs: CourseVenue*) = CourseList(courses.filter(x => vs.contains(x.venue)))
-  def dullabha: CourseList = venue(CourseVenues.DD)
-  def ekb: CourseList = venue(CourseVenues.Ekb)
-  def finished = CourseList(courses.filter(_.status == Finished))
-  def scheduled = CourseList(courses.filter(_.status == NotOpened))
-  def inProgress = CourseList(courses.filter(_.status == InProgress))
+  import CourseVenues._
+  def filter[T](st: T*)(implicit ext: Extractor[T]): CourseList =
+    CourseList(courses.filter(x => st.contains(ext.extractor(x))))
+  implicit def t2f[T](t: T)(implicit ext: Extractor[T]): CourseList = filter(t)
+  def c10d: CourseList = C10d
+  def c3d: CourseList = C3d
+  def c1d: CourseList = C1d
+  def sati: CourseList = Sati
+  def all: CourseList = filter(C10d, C3d, C1d, Sati)
+  def dullabha: CourseList = DD
+  def ekb: CourseList = Ekb
+  def finished: CourseList = Finished
+  def scheduled: CourseList = NotOpened
+  def inProgress: CourseList = InProgress
 }
