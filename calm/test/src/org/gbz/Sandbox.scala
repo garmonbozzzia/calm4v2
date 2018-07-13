@@ -1,8 +1,10 @@
+package org.gbz
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
-import utest._
-import org.gbz.utils.log.Log._
 import org.gbz.calm.Global.system
+import org.gbz.utils.log.Log._
+import utest._
 
 import scala.concurrent.Await
 

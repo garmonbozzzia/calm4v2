@@ -1,3 +1,5 @@
+package org.gbz
+
 import cakesolutions.kafka.{KafkaProducer, KafkaProducerRecord}
 import com.redis.RedisClient
 import org.apache.kafka.common.serialization.StringSerializer

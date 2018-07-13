@@ -1,3 +1,5 @@
+package org.gbz
+
 /* Created on 08.05.18 */
 
 import akka.kafka._
@@ -9,8 +11,8 @@ import org.apache.kafka.common.serialization._
 import utest._
 
 object KafkaTest extends TestSuite {
-  import org.gbz.utils.log.Log._
   import org.gbz.calm.Global._
+  import org.gbz.utils.log.Log._
   val tests = Tests {
     'Hello - {
       val producerSettings = ProducerSettings(system, new ByteArraySerializer, new StringSerializer)
