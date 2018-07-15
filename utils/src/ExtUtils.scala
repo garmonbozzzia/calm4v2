@@ -4,6 +4,12 @@ import ammonite.ops._
 
 object ExtUtils {
 
+  object Mock{
+    var isTest = false
+    def mock[T](main: => T)(test: => T): T = if (isTest) test else main
+  }
+
+
   object Timer {
     def apply[T,R](expr: => T)(tf: Long => Any)(cont: T => R) = {
       val start = System.currentTimeMillis

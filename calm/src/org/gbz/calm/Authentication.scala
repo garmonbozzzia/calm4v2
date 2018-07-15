@@ -32,8 +32,27 @@ object Authentication {
   def newCookie: Future[Cookie] = signIn.map(Cookie("_sso_session", _))
   def sessionKey = "_sessionId"
   def save(sId: String) = sId.<|(CalmDb.redisClient.setex(sessionKey, 1750, _))
-  def cookie = CalmDb.redisClient.get(sessionKey)
-    .fold(signIn.map(save))(
-      Promise.successful(_).future)
+  lazy val storage = Mock.mock[Storage[String]](SessionStorage.redis)(SessionStorage.inMemory)
+  def cookie = storage.get.fold(signIn.map(_ <| storage.save))(Promise.successful(_).future)
     .map(Cookie("_sso_session", _))
+}
+
+trait Storage[T] {
+  def save(id: T): Unit
+  def get: Option[T]
+}
+
+object SessionStorage {
+
+  def redis = new Storage[String] {
+    def sessionKey = "_sessionId"
+    override def save(id: String): Unit = CalmDb.redisClient.setex(sessionKey, 1750, id)
+    override def get = CalmDb.redisClient.get(sessionKey)
+  }
+
+  def inMemory = new Storage[String] {
+    var sId: Option[String] = None
+    override def save(id: String): Unit = sId = Some(id)
+    override def get = sId
+  }
 }
