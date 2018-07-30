@@ -39,7 +39,7 @@ trait Authentication extends LogSupport with SessionStorageBind {
 }
 
 trait AuthenticationBind {
-  val authentication = bi
+  val authentication = bind[Authentication]
 }
 
 trait Storage[T] {
