@@ -67,8 +67,9 @@ object calm extends CommonModule {
 
   override def mainClass = Some("org.gbz.calm.CalmApps")
   override def ivyDeps = Agg(
+    ivy"org.wvlet.airframe::airframe:0.52",
     ivy"org.wvlet.airframe::airframe-log:0.50",
-  ivy"com.typesafe.akka::akka-stream-kafka:0.20",
+    ivy"com.typesafe.akka::akka-stream-kafka:0.20",
     ivy"com.lightbend::kafka-streams-scala:0.2.1",
     ivy"org.scala-lang:scala-reflect:2.12.4",
     ivy"com.lihaoyi::fastparse:1.0.0",

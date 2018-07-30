@@ -20,13 +20,15 @@ object CalmTests extends TestSuite{
   }
 
   val tests = Tests{
-
     'SignIn - {
-      for {
-        auth <- Authentication.cookie
-        result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))
-        _ <- result.traceWith(_.status).discardEntityBytes().future()
-      } yield auth
+      import wvlet.airframe._
+      val auth = newDesign.bind[SessionStorage].toInstance(SessionStorage.inMemory).newSession.build[Authentication]
+        for {
+          auth <- auth.cookie //Authentication().cookie
+          result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))
+          _ <- result.traceWith(_.status).discardEntityBytes().future()
+        } yield auth
+
     }
 
     'FindForm - {

@@ -1,10 +1,14 @@
 package org.gbz.utils.log
 
-import wvlet.log.LogSupport
-
+import wvlet.log._
 import scala.language.experimental.macros
 
 object Log {
+
+  trait LogSupport extends wvlet.log.LogSupport {
+    Logger.setDefaultFormatter(LogFormatter.IntelliJLogFormatter)
+    Logger.scheduleLogLevelScan
+  }
 
   implicit final class Ext[A](val a: A) extends AnyVal {
 

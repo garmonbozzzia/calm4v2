@@ -4,18 +4,18 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model.{HttpHeader, Uri}
 import akka.util.ByteString
-import org.gbz.calm.Authentication
+import org.gbz.calm.AuthenticationBind
 import org.gbz.calm.Global._
 import org.gbz.calm.model.AppListRequests.{AppList1, AppList2}
 
 import scala.concurrent.Future
 
-trait CalmRequest[Entity]{
+trait CalmRequest[Entity] extends AuthenticationBind{
   def uri: Uri
   def headers: scala.collection.immutable.Seq[HttpHeader] = Nil
   def http(implicit parser: Parser[Entity]): Future[Entity] =
     for {
-      auth <- Authentication.cookie
+      auth <- authentication.cookie
       request = Get(uri).withHeaders(auth +: headers)
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
@@ -42,5 +42,4 @@ object CalmRequest{
   def allCourses: CalmRequest[CourseList] = CourseListRequest
   def courseAppsHtml(cId: CourseId): CalmRequest[AppList2] = AppListRequests.fromHtml(cId)
   def courseAppsJson(cId: CourseId): CalmRequest[AppList1] = AppListRequests.fromJson(cId)
-  def courseApps(cId: CourseId) = ???
 }

@@ -20,8 +20,9 @@ object CalmTests extends TestSuite{
   val tests = Tests{
 
     'SignIn - {
+      import wvlet.airframe._
       for {
-        auth <- Authentication.cookie
+        auth <- bind[Authentication].cookie
         result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))
         _ <- result.traceWith(_.status).discardEntityBytes().future()
       } yield auth
