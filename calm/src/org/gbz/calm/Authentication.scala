@@ -4,17 +4,13 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Post
 import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-
-import scala.concurrent.{Future, Promise}
-import org.gbz.utils.log.Log._
 import org.gbz.ExtUtils._
-import Global._
+import org.gbz.calm.Global._
+import org.gbz.utils.log.Log._
 import wvlet.airframe._
 
-object Authentication{
-  private val instance = new Authentication(){}
-  def apply(): Authentication = instance
-}
+import scala.concurrent.Future
+
 trait Authentication extends LogSupport with SessionStorageBind {
 
   private val Seq(login, password) = scala.io.Source.fromFile("data/login").getLines().toSeq

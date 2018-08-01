@@ -64,6 +64,44 @@ object utils extends CommonModule {
 
 object calm extends CommonModule {
   override def moduleDeps = Seq(utils)
+  val modelPath = millSourcePath / "1-model"
+  val corePath = millSourcePath / "2-core"
+  val networkPath = millSourcePath / "3-network"
+  val storagePath = millSourcePath / "3-storage"
+  val appsPath = millSourcePath / "4-apps"
+  object model extends CommonModule {
+    override def millSourcePath = modelPath
+    override def ivyDeps = Agg(
+      ivy"org.wvlet.airframe::airframe:0.52",
+    )
+  }
+
+  object core extends CommonModule {
+    override def moduleDeps = Seq(utils, model)
+    override def millSourcePath = corePath
+  }
+
+  object network extends CommonModule {
+    override def moduleDeps = Seq(utils, model, core)
+    override def millSourcePath = networkPath
+    override def ivyDeps = Agg(
+      ivy"com.typesafe.akka::akka-http:10.1.1",
+      ivy"com.typesafe.akka::akka-stream:2.5.11",
+      ivy"org.wvlet.airframe::airframe:0.52",
+    )
+  }
+  object storage extends CommonModule {
+    override def millSourcePath = storagePath
+  }
+
+  object apps extends CommonModule {
+    override def moduleDeps = Seq(utils, model, core, network, storage)
+    override def millSourcePath = appsPath
+    override def ivyDeps = Agg(
+      ivy"org.wvlet.airframe::airframe:0.52",
+     )
+
+  }
 
   override def mainClass = Some("org.gbz.calm.CalmApps")
   override def ivyDeps = Agg(

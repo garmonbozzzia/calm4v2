@@ -24,7 +24,9 @@ object ExtUtils {
 
   implicit class TransformImplicit[T](val obj: T) extends AnyVal {
     def iapl[B](f: T => B): T = {f(obj); obj}
+    def <<< [B](f: T => B): T = {f(obj); obj}
     def rapl[B](f: T => B): B = f(obj)
+    def >>> [B](f: T => B): B = f(obj)
     def <|[B](f: T => B): T = {f(obj); obj}
     def <*[B](expr: => B): T = {expr; obj}
     def |?>(condition: Boolean)(transform: T => T): T =
