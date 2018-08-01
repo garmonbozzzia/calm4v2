@@ -1,29 +1,26 @@
 package calm
 
-import akka.http.scaladsl.Http
 import org.gbz.Global._
 import org.gbz.utils.log.Log._
+
+import akka.http.scaladsl.Http
 import utest._
 import wvlet.airframe._
 import wvlet.surface.tag._
-
 import scala.concurrent.{Await, Future}
 
-//
 class MocAuthClient extends AuthClient with LogSupport {
   var id = 0
   override def signIn: Future[String @@ SessionId] = {
     id += 1
     Future(id.toString.taggedWith[SessionId])
   }
-
 }
-//
-class MocSessionStorage extends SessionStorage {
+
+class MocSessionStorage extends Storage[String@@SessionId] {
   override def write(obj: String @@ SessionId): Unit = {}
   override def read[U](key: U) = None
 }
-
 
 object AuthTest extends TestSuite with LogSupport {
   override def tests = Tests {
@@ -31,8 +28,8 @@ object AuthTest extends TestSuite with LogSupport {
       val manager = newDesign
         .bind[Credentials].toInstance(Credentials("login", "password", ""))
         .bind[Credentials].toInstance(Core.defaultCredentials)
-        .bind[SessionStorage].to[MocSessionStorage]
-        .bind[SessionStorage].to[InMemoStorage]
+        .bind[Storage[String@@SessionId]].to[MocSessionStorage]
+        .bind[Storage[String@@SessionId]].to[InMemoSessionStorage]
         .bind[AuthClient].to[AuthClientImpl]
         .bind[AuthClient].to[MocAuthClient]
         .newSession.build[AuthManager]
