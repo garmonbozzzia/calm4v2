@@ -1,3 +1,5 @@
+package org.gbz
+
 import utest._
 object ExtensionsTest extends TestSuite {
   val tests = Tests {

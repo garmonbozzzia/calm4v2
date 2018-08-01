@@ -10,3 +10,11 @@ object Sandbox extends TestSuite{
     }
   }
 }
+
+object Sandbox2 extends TestSuite{
+  override def tests = Tests{
+    'Model - {
+      //      import
+    }
+  }
+}

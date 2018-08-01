@@ -1,7 +1,5 @@
 package org.gbz
 
-import ammonite.ops._
-
 object ExtUtils {
 
   object Timer {

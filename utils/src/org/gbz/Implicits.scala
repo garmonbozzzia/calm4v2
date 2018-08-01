@@ -1,15 +1,11 @@
-package calm
-
-import java.text.SimpleDateFormat
+package org.gbz
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}
 import org.gbz.utils.log.Log._
 
 import scala.collection.immutable
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
-
-
+import scala.concurrent.ExecutionContextExecutor
 
 object Global {
   implicit val system: ActorSystem = ActorSystem()
@@ -18,7 +14,7 @@ object Global {
   implicit val materializer: ActorMaterializer = ActorMaterializer(
     ActorMaterializerSettings(system).withSupervisionStrategy(decider))
 
-  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = system.dispatcher
 
   import scala.reflect._
   import scala.reflect.runtime.universe._
