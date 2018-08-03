@@ -1,15 +1,42 @@
 package calm
 
-trait AppId
-trait DisplayId
-trait CourseId
-trait FamilyName
-trait GivenName
-trait Pregnancy
-trait Email
-trait BirthDate
-trait Age
-trait Phone
+import java.time.LocalDate
+
+import org.gbz.Tag._
+
+//trait AppId
+//trait DisplayId
+//trait CourseId
+//trait FamilyName
+//trait GivenName
+//trait Pregnancy
+//trait Email
+//trait BirthDate
+//trait Age
+//trait Phone
+
+object Types {
+  trait AppIdTag
+  trait DisplayIdTag
+  trait CourseIdTag
+  trait FamilyNameTag
+  trait GivenNameTag
+  trait PregnancyTag
+  trait EmailTag
+  trait BirthDateTag
+  trait AgeTag
+  trait PhoneTag
+  type AppId      = Int @@ AppIdTag
+  type DisplayId  = String @@ DisplayIdTag
+  type CourseId   = Int @@ CourseIdTag
+  type FamilyName = String @@ FamilyNameTag
+  type GivenName  = String @@ GivenNameTag
+  type Pregnancy  = Boolean @@ PregnancyTag
+  type Email      = String @@ EmailTag
+  type BirthDate  = LocalDate @@ BirthDateTag
+  type Age        = Int @@ AgeTag
+  type Phone      = String @@ PhoneTag
+}
 
 object CalmEnums {
 

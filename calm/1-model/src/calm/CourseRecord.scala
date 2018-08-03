@@ -1,7 +1,8 @@
 package calm
-import java.time.{LocalDate}
+import java.time.LocalDate
 
 import CalmEnums._
+import calm.Types.CourseId
 case class CourseRecord(
   cId: CourseId,
   start: LocalDate,

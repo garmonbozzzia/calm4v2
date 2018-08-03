@@ -1,9 +1,16 @@
 package calm
 
-import wvlet.surface.tag.@@
+import org.gbz.Tag._
 
-trait Login
-trait Password
-trait SessionId
-case object SessionId
-case class Credentials(login: String@@Login, password: String@@Password, sid: String@@SessionId)
+object Authentication {
+  trait LoginTag
+  trait PasswordTag
+  trait SessionIdTag
+  type Login = String @@ LoginTag
+  type Password = String @@ PasswordTag
+  type SessionId = String @@ SessionIdTag
+
+  case object SessionId
+}
+import Authentication._
+case class Credentials(login: Login, password: Password, sid: SessionId)

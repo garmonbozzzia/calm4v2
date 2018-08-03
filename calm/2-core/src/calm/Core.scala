@@ -1,10 +1,13 @@
 package calm
 
-import wvlet.surface.tag._
+import org.gbz.Tag._
+import Authentication._
+
+import scala.language.implicitConversions
 
 object Core {
   def defaultCredentials: Credentials = {
-    val Seq(login, password, oldSid) = scala.io.Source.fromFile("data/login2").getLines().toSeq
-    Credentials(login, password, oldSid)
+    val Seq(login, password, oldSessionId) = scala.io.Source.fromFile("data/login2").getLines().toSeq
+    Credentials(login.@@[LoginTag], password.@@[PasswordTag], oldSessionId.@@[SessionIdTag])
   }
 }

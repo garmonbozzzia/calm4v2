@@ -10,7 +10,7 @@ object Libraries {
   val airframeLogLib = ivy"org.wvlet.airframe::airframe-log:${airframeVersion}"
   val akkaStreamKafkaLib = ivy"com.typesafe.akka::akka-stream-kafka:0.20"
   val kafkaStreamsLib = ivy"com.lightbend::kafka-streams-scala:0.2.1"
-  val reflectLib = ivy"org.scala-lang:scala-reflect:2.12.6"
+  val reflectLib = ivy"org.scala-lang:scala-reflect:2.12.4"
   val fastparseLib = ivy"com.lihaoyi::fastparse:1.0.0"
   val scrapperLib = ivy"net.ruippeixotog::scala-scraper:2.1.0"
   val json4sNativeLib = ivy"org.json4s::json4s-native:3.5.3"
@@ -52,7 +52,7 @@ trait TestableModule extends ScalaModule2_12 {
 }
 
 trait ScalaModule2_12 extends ScalaModule with ExtendedRepo {
-  def scalaVersion = "2.12.6"
+  def scalaVersion = "2.12.4"
 }
 
 trait MacroModule extends ScalaModule2_12 {
@@ -85,7 +85,6 @@ object utils extends TestableModule {
   )
 }
 
-
 object calm extends TestableModule {
   override def moduleDeps = Seq(utils)
   val modelPath = millSourcePath / "1-model"
@@ -94,6 +93,7 @@ object calm extends TestableModule {
   val storagePath = millSourcePath / "3-storage"
   val appsPath = millSourcePath / "4-apps"
   object model extends ScalaModule2_12 {
+    override def moduleDeps = Seq(utils)
     override def millSourcePath = modelPath
     override def ivyDeps = Agg(
       airframeLib
@@ -111,6 +111,8 @@ object calm extends TestableModule {
     override def ivyDeps = Agg(
       akkaHttpLib,
       akkaStreamLib,
+      json4sNativeLib,
+      json4sJacksonLib,
       airframeLib
     )
   }

@@ -36,6 +36,18 @@ object Log {
 
     def logInfoWith[B](reader: A => B, cause: Throwable): A = macro LogMacros.logInfoWE
 
+    def logDebug: A = macro LogMacros.logDebug
+
+    def logDebug(cause: Throwable): A = macro LogMacros.logDebugE
+
+    def logDebug[B](msg: B): A = macro LogMacros.logDebugC
+
+    def logDebug[B](msg: B, cause: Throwable): A = macro LogMacros.logDebugCE
+
+    def logDebugWith[B](reader: A => B): A = macro LogMacros.logDebugW
+
+    def logDebugWith[B](reader: A => B, cause: Throwable): A = macro LogMacros.logDebugWE
+
     def logWarn: A = macro LogMacros.logWarn
 
     def logWarn(cause: Throwable): A = macro LogMacros.logWarnE

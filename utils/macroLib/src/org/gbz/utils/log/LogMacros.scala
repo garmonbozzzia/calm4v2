@@ -129,6 +129,13 @@ private[log] object LogMacros {
   def logInfoW(c: blackbox.Context)(reader: c.Tree): c.Tree = logW(c,Info)(reader)
   def logInfoWE(c: blackbox.Context)(reader: c.Tree, cause: c.Tree): c.Tree = logWE(c,Info)(reader, cause)
 
+  def logDebug(c: blackbox.Context): c.Tree = log(c, Debug)
+  def logDebugE(c: blackbox.Context)(cause: c.Tree): c.Tree = logE(c, Debug)(cause)
+  def logDebugC(c: blackbox.Context)(msg: c.Tree): c.Tree = logC(c,Debug)(msg)
+  def logDebugCE(c: blackbox.Context)(msg: c.Tree, cause: c.Tree): c.Tree = logCE(c,Debug)(msg, cause)
+  def logDebugW(c: blackbox.Context)(reader: c.Tree): c.Tree = logW(c,Debug)(reader)
+  def logDebugWE(c: blackbox.Context)(reader: c.Tree, cause: c.Tree): c.Tree = logWE(c,Debug)(reader, cause)
+
   def logWarn(c: blackbox.Context): c.Tree = log(c, Warn)
   def logWarnE(c: blackbox.Context)(cause: c.Tree): c.Tree = logE(c, Warn)(cause)
   def logWarnC(c: blackbox.Context)(msg: c.Tree): c.Tree = logC(c,Warn)(msg)

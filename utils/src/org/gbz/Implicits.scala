@@ -36,7 +36,7 @@ object Global {
     constructorMirror(constructorArgs:_*).asInstanceOf[T]
   }
 
-  def toImmutable[A](elements: Iterable[A]): immutable.Iterable[A] =
+  implicit def toImmutable[A](elements: Iterable[A]): immutable.Iterable[A] =
     new scala.collection.immutable.Iterable[A] {
       override def iterator: Iterator[A] = elements.toIterator
     }

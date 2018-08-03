@@ -4,10 +4,11 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Post
 import akka.http.scaladsl.model.FormData
 import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
+import calm.Authentication._
 import org.gbz.Global._
 import org.gbz.utils.log.Log._
 import wvlet.airframe.bind
-import wvlet.surface.tag._
+import org.gbz.Tag._
 
 import scala.concurrent.Future
 
@@ -23,7 +24,7 @@ trait AuthClientImpl extends AuthClient with LogSupport {
       "user[password]" -> credentials.password,
       "commit" -> "Log In")).addHeader(expiredId)
 
-  def signIn: Future[String@@SessionId] = for {
+  def signIn: Future[SessionId] = for {
     response <- Http().singleRequest(signInRequest)
     discard <- response.discardEntityBytes().future()
     session <- response.header[`Set-Cookie`].map(_.cookie.value)

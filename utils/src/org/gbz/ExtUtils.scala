@@ -25,6 +25,7 @@ object ExtUtils {
     def <<< [B](f: T => B): T = {f(obj); obj}
     def rapl[B](f: T => B): B = f(obj)
     def >>> [B](f: T => B): B = f(obj)
+    def >>>> [B](f: T => B): B = f(obj)
     def <|[B](f: T => B): T = {f(obj); obj}
     def <*[B](expr: => B): T = {expr; obj}
     def |?>(condition: Boolean)(transform: T => T): T =

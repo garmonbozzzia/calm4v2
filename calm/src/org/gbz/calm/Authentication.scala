@@ -31,7 +31,7 @@ trait Authentication extends LogSupport with SessionStorageBind {
     } yield session.log
 
   def cookie: Future[Cookie] =
-    sessionStorage.get.fold(signIn.map(_ <| sessionStorage.set))(Future.successful).map(Cookie("_sso_session", _))
+    sessionStorage.get.fold(signIn.map(_ <<< sessionStorage.set))(Future.successful).map(Cookie("_sso_session", _))
 }
 
 trait AuthenticationBind {

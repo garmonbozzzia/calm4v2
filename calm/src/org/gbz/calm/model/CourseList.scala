@@ -10,8 +10,8 @@ object CourseList{
   implicit val venueExt: Extractor[CourseVenue] = Extractor.pure(_.venue)
 
   object Extractor {
-    def apply[T](implicit extractor: Extractor[T]) = extractor
-    def pure[T](f: CourseRecord => T) = new Extractor[T] {def extractor = f}
+    def apply[T](implicit extractor: Extractor[T]): Extractor[T] = extractor
+    def pure[T](f: CourseRecord => T): Extractor[T] = new Extractor[T] {def extractor: CourseRecord => T = f}
   }
 }
 
