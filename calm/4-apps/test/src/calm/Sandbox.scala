@@ -8,21 +8,25 @@ import utest._
 
 import scala.concurrent.{Await, Future}
 
-
-
 // 1
 
 trait WebSource[T]
 trait HtmlSource[T]
+trait JsonSource[T]
 trait CourseListTag
 object AllCourses extends CourseListTag
-
+trait Result[-A] {
+  type Result
+}
+object Result{
+  type Aux[A,B] = Result[A]{type Result = B}
+  type Auxx[A,B,F[_]] = F[A]{type Result = B}
+}
 
 // 2
 
-
-trait WebClient[A[_]] {
-  def get[T: A](request: T): Future[String@@WebSource[T]]
+trait WebClient[A[_] <: Result[_]] {
+  def get[T,R](request: T)(implicit a: Result.Auxx[T,R,A]): Future[String@@R]
 }
 
 // 3
@@ -32,27 +36,26 @@ import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model.headers.Cookie
 import akka.http.scaladsl.model.{HttpHeader, Uri}
 import akka.util.ByteString
+import org.gbz.Global._
+import wvlet.airframe._
 
 import scala.collection.immutable.{Seq => ISeq}
 
-
-trait CalmUri[-A] {
-  def uri(a:A): Uri
+trait CalmRequest[-T] extends Result[T]{
+  def uri(a:T): Uri
+  def headers: ISeq[HttpHeader]
 }
 
-trait CalmHeaders[-A] {
-  def headers(a:A): ISeq[HttpHeader]
-}
-
-
-trait CalmRequest[-T] extends CalmUri[T] with CalmHeaders[T]
 object CalmRequest{
+  type Aux[T,R] = CalmRequest[T]{type Result = R}
   def apply[A](implicit request: CalmRequest[A]): CalmRequest[A] = request
   def uri[A: CalmRequest](a:A): Uri = CalmRequest[A].uri(a)
-  def headers[A: CalmRequest](a:A): ISeq[HttpHeader] = CalmRequest[A].headers(a)
-  implicit class CalmRequestOps[T: CalmRequest](a: T){
-    def uri: Uri = CalmRequest[T].uri(a)
-    def headers: Seq[HttpHeader] = CalmRequest[T].headers(a)
+  def headers[A: CalmRequest]: ISeq[HttpHeader] = CalmRequest[A].headers
+
+  def html[T](f: T => Uri): CalmRequest[T] = new CalmRequest[T] {
+    override type Result = HtmlSource[T]
+    override def uri(a: T): Uri = uri(a)
+    override def headers: ISeq[HttpHeader] = ISeq.empty[HttpHeader]
   }
 
   val accept = RawHeader("Accept", "application/json, text/javascript, */*; q=0.01")
@@ -60,30 +63,74 @@ object CalmRequest{
   val referer = RawHeader("Referer", "")
   val xmlHeaders: ISeq[HttpHeader] = scala.collection.immutable.Seq(accept,xml,referer)
 
+  def json[T](f: T => Uri): CalmRequest[T] = new CalmRequest[T] {
+    override type Result = JsonSource[T]
+    override def uri(a: T): Uri = uri(a)
+    override def headers: ISeq[HttpHeader] = xmlHeaders
+  }
 }
-
-import org.gbz.Global._
-import wvlet.airframe._
 
 trait Calm4WebClient extends WebClient[CalmRequest] {
   import CalmRequest._
   val auth = bind[AuthManager]
-  override def get[T: CalmRequest](calmRequest: T): Future[String @@ WebSource[T]] = for {
-    auth <- auth.sessionId.map(Cookie("_sso_session", _))
-    request = Get(uri(calmRequest)).withHeaders(auth +: headers(calmRequest))
-    response <- Http().singleRequest(request)
-    json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-  } yield json.utf8String.@@[WebSource[T]]
-//  override def get[T: CalmRequest[_]](request: T) = ???
+  override def get[T, R](calmRequest: T)(implicit a: CalmRequest.Aux[T, R]): Future[String @@ R] =
+    for {
+      auth <- auth.sessionId.map(Cookie("_sso_session", _))
+      request = Get(uri(calmRequest)).withHeaders(auth +: headers)
+      response <- Http().singleRequest(request)
+      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+    } yield json.utf8String.@@[R]
 }
+
+// 4
 
 object Sandbox extends TestSuite with Designs {
   override def tests = Tests{
+    'SandBox - {
+
+//      trait Bar[T]{
+//        type Baz
+//        def baz: Baz
+//      }
+//
+//      object Baz{
+//        type Aux[A,B] = Baz[A]{type Bazz = B}
+//        def apply[A,B](foo: A => B): Aux[A,B] = new Baz[A] {
+//          override type Bazz = B
+//          override def baz(t: A): Bazz = foo(t)
+//          def a[A:List:Option] = ???
+//        }
+//      }
+//
+//      trait Baz[T] {
+//        type Bazz
+//        def baz(t: T): Bazz
+//      }
+//
+//      trait Foo[A[_]]{
+//        def foo[T](implicit bar: Bar[T]): bar.Baz = bar.baz
+//      }
+
+      trait Foo[A,B]
+      trait Bar[F[_,_]]{
+        def bar[A,B](a:A)(implicit foo: Foo[A,B]): B
+      }
+
+//      implicit val barInt = new Bar[Int]{
+//        override type Baz = String
+//        override def baz = "Hello"
+//      }
+
+
+
+//      implicit val barInt: Baz.Aux[String,_] = Baz[String,Int](_ => 10)
+//      new Foo[Bar]{}.foo
+    }
     'WebClient - {
       val a = mainDesign.bind[WebClient[CalmRequest]].to[Calm4WebClient].newSession.build[WebClient[CalmRequest]]
-      implicit val courseListRequest: CalmRequest[CourseListTag] = new CalmRequest[CourseListTag] {
-        import calm.CalmUri._
-        override def uri(a: CourseListTag) =  host.withPath("/en/courses").withQuery(columnParams(10) ++ Seq (
+      import calm.CalmUri._
+      implicit val courseListRequest: CalmRequest[CourseListTag] = calm_.CalmRequest.html {
+        _ => host.withPath("/en/courses").withQuery(columnParams(10) ++ Seq (
           "order[0][column]" -> "0",
           "order[0][dir]" -> "asc",
           "start" -> "0",
@@ -99,11 +146,9 @@ object Sandbox extends TestSuite with Designs {
           "user_custom_search[defaultCurrentDate]" -> "true",
           "user_custom_search[context]" -> "all_courses"
         ))
-
-        override def headers(a: CourseListTag): ISeq[HttpHeader] = ISeq.empty[HttpHeader]
       }
-      val b = a.get(AllCourses.taggedWith[HtmlSource[_]])
-      b
+//      val b = a.get(AllCourses.taggedWith[HtmlSource[_]])
+//      b
     }
   }
 
