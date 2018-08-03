@@ -111,7 +111,7 @@ object Sandbox extends TestSuite with Designs {
           "user_custom_search[context]" -> "all_courses"
         ))
       }
-      a.html(AllCourses)
+//      a.html(AllCourses)
 //        a.get[CourseListTag, HtmlSource[CourseListTag]](AllCourses)
 //      b
     }
