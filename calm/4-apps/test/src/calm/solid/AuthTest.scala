@@ -45,13 +45,6 @@ object AuthTest extends TestSuite with LogSupport with Designs {
         id2 <- manager.sessionId
       } yield id1 ==> id2.logInfo
     }
-
-    'GetCourseList {
-//      val webClient: WebClient = mainDesign.newSession.build[WebClient]
-
-//      implicit val a: HeaderHelper[CourseList] = defaultHeaderHelper[CourseList]
-//      webClient.get(CourseList)
-    }
   }
 
   override def utestAfterAll(): Unit = {

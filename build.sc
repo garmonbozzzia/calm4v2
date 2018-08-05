@@ -24,6 +24,7 @@ object Libraries {
   val loggingLib = ivy"com.typesafe.scala-logging::scala-logging:3.9.0"
   val utestLib = ivy"com.lihaoyi::utest:0.6.4"
   val ammoniteLib = ivy"com.lihaoyi::ammonite-ops:1.1.0"
+  val shapelessLib = ivy"com.chuusai::shapeless:2.3.3"
 }
 import Libraries._
 
@@ -123,7 +124,7 @@ object calm extends TestableModule {
   object apps extends TestableModule {
     override def moduleDeps = Seq(utils, model, core, network, storage)
     override def millSourcePath = appsPath
-    override def ivyDeps = Agg(airframeLib)
+    override def ivyDeps = Agg(airframeLib,shapelessLib)
   }
 
   override def mainClass = Some("org.gbz.calm.CalmApps")
