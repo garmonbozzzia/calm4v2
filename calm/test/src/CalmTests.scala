@@ -1,10 +1,10 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
-import org.gbz.Extensions._
-import org.gbz.calm.CalmEnums._
-import org.gbz.calm.CalmModel.ApplicantJsonRecord
+import org.gbz.utils.log.Log._
+import org.gbz.ExtUtils._
 import org.gbz.calm._
+import org.gbz.calm.model.{AppListRequests, CourseListRequest}
 import utest._
 
 import scala.concurrent.Await
@@ -12,33 +12,17 @@ import scala.concurrent.Await
 object CalmTests extends TestSuite{
   import org.gbz.calm.Global._
 
-  override def utestAfterAll()= {
+  override def utestAfterAll(): Unit = {
     import scala.concurrent.duration._
     Await.result(system.terminate(), 1 minute)
   }
 
   val tests = Tests{
-    'Sandbox - {
-      object Enum extends Enumeration {
-        val Red = Value("red")
-        val Blue = Value("blue")
-      }
-
-      Enum.withName("red").trace
-      Enum.withName("green")
-    }
-
-    'GoogleTest - {
-      val a = for{
-        result <- Http().singleRequest(Get("https://google.com/"))
-        _ <- result.traceWith(_.status).discardEntityBytes().future()
-      } yield result
-      a.foreach(_.trace)
-    }
 
     'SignIn - {
+      import wvlet.airframe._
       for {
-        auth <- Authentication.cookie
+        auth <- bind[Authentication].cookie
         result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))
         _ <- result.traceWith(_.status).discardEntityBytes().future()
       } yield auth
@@ -49,18 +33,16 @@ object CalmTests extends TestSuite{
         rc.keys("*.app").get.flatten.map(rc.hgetall1(_)).map(_.get).filter(_("familyName").contains("Кир")).mkString("\n").trace
       })
     }
-
-    import org.gbz.calm.CalmModel._
     'Calm - {
-      val request = implicitly[CalmRequest[CourseList]]
+      val request = CourseListRequest
       Timer(Calm.redisCourseList.c10d.dullabha.finished)(_.trace)(cs =>
-        cs.courses.sortBy(_.start).mkString("\n").log)
+        cs.courses.sortBy(_.start.toString).mkString("\n").log)
     }
 
     'CourseList - {
-      val request = implicitly[CalmRequest[CourseList]]
+      val request = CourseListRequest
       for {
-              httpCourseList <- Calm.http[CourseList](request)
+              httpCourseList <- request.http
               _ = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")
               _ = CalmDb.update(httpCourseList)
               redisCourseList = Calm.redisCourseList.traceWith(x => s"Courses number: ${x.courses.size}")
@@ -79,8 +61,8 @@ object CalmTests extends TestSuite{
         .diff(Calm.redisAllApps.apps.map(_.cId).distinct).trace
       Source.fromIterator(() => c10ds.courses.iterator)
         .filter(x => newCourses.contains(x.cId))
-        .map(_.traceWith(_.cId).dataRequest1)
-        .mapAsync(1)(Calm.http)
+        .map(c => AppListRequests.fromJson(c.cId))
+        .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.export(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
@@ -88,8 +70,8 @@ object CalmTests extends TestSuite{
     'LoadApps - {
       val c10ds = Calm.redisCourseList.c10d.dullabha.finished
       Source.fromIterator(() => c10ds.courses.iterator)
-        .map(_.traceWith(_.cId).dataRequest1)
-        .mapAsync(1)(Calm.http)
+        .map(c => AppListRequests.fromJson(c.cId))
+        .mapAsync(1)(_.http)
         .runForeach(x => CalmDb.update(x))
         //.map(_ => Calm.redisClient.keys("c4:a:*").get.size.trace)
     }
@@ -117,10 +99,9 @@ object CalmTests extends TestSuite{
     'CourseData - {
       val course = Calm.redisCourseList.c10d.dullabha.finished.courses.head
       for {
-        courseData <- Calm.http(course.dataRequest1)
+        courseData <- AppListRequests.merged(course.cId)
         _ = CalmDb.update(courseData)
-        //allApps = Calm.loadCourseApps(course.cId)
-      } yield courseData.apps.mkString("\n").log
+      } yield courseData.apps.mkString("\n")
     }
   }
 }

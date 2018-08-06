@@ -4,10 +4,12 @@ import cakesolutions.kafka.{KafkaProducer, KafkaProducerRecord}
 import com.redis.{RedisClient, RedisClientPool}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
-import org.gbz.calm.CalmModel._
 import org.json4s.jackson.Serialization.write
-import org.gbz.Extensions._
+import org.gbz.utils.log.Log._
+import org.gbz.ExtUtils._
 import Global._
+import com.redis.serialization.Format
+import org.gbz.calm.model._
 
 object CalmDb {
   val redisClient = new RedisClient("localhost", 6379, 1)
@@ -20,7 +22,9 @@ object CalmDb {
 
   def update(keyPattern: String, data: Map[String, String]): RedisClient => Diff = rc => {
     rc.keys[String](keyPattern) match {
-      case Some(Nil) => NewKey(keyPattern) <* rc.hmset(keyPattern, data)
+      case Some(Nil) =>
+        rc.hmset(keyPattern, data)
+        NewKey(keyPattern)
       case Some(Seq(Some(key))) =>
         val oldData = rc.hgetall1(key).get
         val changes = data.map {
@@ -51,5 +55,9 @@ object CalmDb {
       case NewKey(k) => k -> s"NewKey $k"
       case x@FieldChanges(key, fields) => key -> s"ChangeFields $key ${write(fields)}"
     }.map{case (k,v) => KafkaProducerRecord(updateTopic, Some(k), v)}.map(_ <| producer.send)
+  }
+
+  implicit val format = Format{
+    case d: CourseDate => d.toString.getBytes("UTF-8")
   }
 }

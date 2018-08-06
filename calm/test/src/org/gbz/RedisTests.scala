@@ -1,7 +1,9 @@
+package org.gbz
+
 import cakesolutions.kafka.{KafkaProducer, KafkaProducerRecord}
 import com.redis.RedisClient
 import org.apache.kafka.common.serialization.StringSerializer
-import org.gbz.calm.{Calm, CalmDb}
+import org.gbz.calm.CalmDb
 import utest._
 
 import scala.concurrent.Await
@@ -10,9 +12,9 @@ import scala.concurrent.Await
 object RedisTests extends TestSuite {
 
   import org.gbz.calm.Global._
-  import org.gbz.Extensions._
+  import org.gbz.utils.log.Log._
 
-  override def utestAfterAll() = {
+  override def utestAfterAll(): Unit = {
     import scala.concurrent.duration._
     Await.result(system.terminate(), 1 minute)
   }
@@ -48,7 +50,7 @@ object RedisTests extends TestSuite {
       val data = Seq( Map("a"->"aa", "b"->"bb"), Map("a"->"aa", "c"->"CCC", "b"->"BBB"), Map("a" -> "aa"))
       data.map(update("k",_)).map(CalmDb.redisClientPool.withClient).collect{
         case NewKey(k) => "NewKey" -> k
-        case x@FieldChanges(key, fields) => key -> write(fields)
+        case FieldChanges(key, fields) => key -> write(fields)
       }.map{case (k,v) => KafkaProducerRecord(testTopic, Some(k), v)}
         .foreach(producer.send)//foreach(Calm.redisClientPool.withClient(update("k", _)))
     }
@@ -60,11 +62,11 @@ object RedisTests extends TestSuite {
     'Redis - {
       CalmDb.redisClient.psetex("c4:testKey", 10000, "testValue2")
       CalmDb.redisClient.get("c4:testKey").trace
-      CalmDb.redisClientPool.withClient(client => {
+      CalmDb.redisClientPool.withClient(_ => {
         CalmDb.redisClient.psetex("c4:testKey1", 10000, "testValue1")
         CalmDb.redisClient.get("c4:testKey1").trace
       })
-      CalmDb.redisClientPool.withClient(client => {
+      CalmDb.redisClientPool.withClient(_ => {
         CalmDb.redisClient.psetex("c4:testKey2", 10000, "testValue2")
         CalmDb.redisClient.get("c4:testKey2").trace
       })

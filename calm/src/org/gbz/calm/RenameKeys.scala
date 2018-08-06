@@ -2,7 +2,7 @@ package org.gbz.calm
 
 /* Created on 02.05.18 */
 object RenameKeys extends App {
-  import org.gbz.Extensions._
+  import org.gbz.utils.log.Log._
 
   CalmDb.redisClientPool.withClient { rc =>
     rc.keys("*:[A-z]*").get.flatten.trace.map(rc.del(_))

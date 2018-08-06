@@ -1,15 +1,11 @@
 package org.gbz.calm
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.kafka.scaladsl.Consumer
 import akka.kafka.{ConsumerSettings, Subscriptions}
-import akka.util.ByteString
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 import org.gbz.calm.Global._
-
-import scala.concurrent.Future
+import org.gbz.calm.model._
 
 /* Created on 19.04.18 */
 
@@ -21,7 +17,6 @@ object Calm {
   val xmlHeaders = scala.collection.immutable.Seq(accept,xml,referer)
 
   import CalmDb._
-  import CalmModel._
 
   val consumerSettings = ConsumerSettings(system, new ByteArrayDeserializer, new StringDeserializer)
     .withBootstrapServers("localhost:9092")
@@ -32,14 +27,6 @@ object Calm {
 
   //def http2 =
 
-  def http[Entity]: CalmRequest[Entity] => Future[Entity] = calmRequest =>
-    for {
-      auth <- Authentication.cookie
-      request = Get(calmRequest.uri).withHeaders(auth +: calmRequest.headers)
-      response <- Http().singleRequest(request)
-      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield calmRequest.parseEntity(json.utf8String)
-
   def redisCourseList: CourseList =
     CourseList(redisClientPool.withClient{ client => client.keys("*.course").get.flatten
     .map(client.hgetall1(_)).flatten
@@ -49,6 +36,6 @@ object Calm {
   def redisAllApps = AppList(redisClientPool.withClient{ client =>
     client.keys("*:*.app").get.flatten
       .map(client.hgetall1(_)).flatten
-      .map(ApplicantRecord(_))
+      .map(MergedApplicantRecord(_)).flatten
   })
 }

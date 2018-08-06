@@ -2,19 +2,20 @@ package org.gbz.calm
 
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.{Path, Query}
-import org.gbz.Extensions._
+import org.gbz.utils.log.Log._
+import org.gbz.calm.model.{AppId, CourseId}
 
+import scala.collection.immutable
 import scala.language.implicitConversions
 
 /**
   * Created by yuri on 26.08.17.
   */
 object CalmUri {
-  type Id = Int
   private val ks = Seq("[data]", "[name]", "[searchable]", "[orderable]", "[search][value]", "[search][regex]")
   private val vs = Seq("", true, true, "", false).map(_.toString)
 
-  private def columnParams(n: Int) = for{
+  private def columnParams(n: Int): immutable.Seq[(String, String)] = for{
     i <- (0 to n).toList
     (x,y) <- ks.zip(i.toString +: vs)
   } yield s"columns[$i]$x" -> y
@@ -24,17 +25,17 @@ object CalmUri {
   implicit def string2Path(str: String): Path = Path(str)
 
   def searchUri(s: String): Uri = host.withPath("/en/course_applications/search").withQuery(Query("typeahead" -> s))
-  def messageUri(mId: Int, aId: Id): Uri = host.withPath(s"/en/course_applications/$aId/messages/$mId")
-  def noteUri(nId: Int, aId: Id): Uri = host.withPath(s"/en/course_applications/$aId/notes/$nId")
-  def messageOrNoteUri( msgId: Int, aId: Int, mType: String): Uri = mType match {
+  def messageUri(mId: Int, aId: AppId): Uri = host.withPath(s"/en/course_applications/$aId/messages/$mId")
+  def noteUri(nId: Int, aId: AppId): Uri = host.withPath(s"/en/course_applications/$aId/notes/$nId")
+  def messageOrNoteUri( msgId: Int, aId: AppId, mType: String): Uri = mType match {
     case "m" => messageUri(msgId, aId)
     case "n" => noteUri(msgId, aId)
   }
 
-  def applicationUri(appId: Id, courseId: Id): Uri =
+  def applicationUri(appId: AppId, courseId: CourseId): Uri =
     host.withPath(s"/en/courses/$courseId/course_applications/$appId/edit")
 
-  def reflistUri(appId: Id): Uri = host
+  def reflistUri(appId: AppId): Uri = host
     .withPath(s"/en/course_application/$appId/course_application_load_rl")
     .withQuery(columnParams(9) ++ Seq(
       "order[0][column]" -> "0",
@@ -45,7 +46,7 @@ object CalmUri {
       "search[regex]" -> "false"
     ))
 
-  def courseUri(id: Int): Uri = host.withPath(s"/en/courses/$id/course_applications")
+  def courseUri(id: CourseId): Uri = host.withPath(s"/en/courses/$id/course_applications")
 
   def inboxUri(start: Int = 0): Uri =
     host.withPath("/en/course_applications/inbox").withQuery(columnParams(8) ++ Seq(
@@ -80,7 +81,7 @@ object CalmUri {
       "user_custom_search[context]" -> "all_courses"
     )).trace
 
-  def conversationUri(appId: Id): Uri = host.withPath(s"/en/course_applications/$appId/conversation_datatable")
+  def conversationUri(appId: AppId): Uri = host.withPath(s"/en/course_applications/$appId/conversation_datatable")
     .withQuery( columnParams(8) ++ Seq(
       "order[0][column]" -> "0",
       "order[0][dir]" -> "asc",

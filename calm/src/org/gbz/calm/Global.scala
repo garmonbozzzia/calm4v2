@@ -6,13 +6,12 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}
 import ammonite.ops.{Path, pwd}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
-import org.gbz.Extensions._
+import org.gbz.utils.log.Log._
 import org.json4s._
 
+import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-
-/* Created on 19.04.18 */
 object Global {
   implicit val system: ActorSystem = ActorSystem()
 
@@ -23,9 +22,6 @@ object Global {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   val browser = JsoupBrowser()
   implicit val formats: DefaultFormats.type = DefaultFormats
-
-  val timezoneDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z")
-  val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
 
   implicit val logs: Path = pwd/'data/'logs/"log.txt"
 
@@ -50,7 +46,7 @@ object Global {
     constructorMirror(constructorArgs:_*).asInstanceOf[T]
   }
 
-  def toImmutable[A](elements: Iterable[A]) =
+  implicit def toImmutable[A](elements: Iterable[A]): immutable.Iterable[A] =
     new scala.collection.immutable.Iterable[A] {
       override def iterator: Iterator[A] = elements.toIterator
     }
