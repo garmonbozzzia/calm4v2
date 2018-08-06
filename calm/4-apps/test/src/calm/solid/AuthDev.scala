@@ -12,16 +12,25 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.{higherKinds, implicitConversions}
 
-trait MocWebModule extends WebModule {
-  override implicit def htmlSource[T: CalmUri](implicit auth: AuthManager @@ Default) = super.htmlSource.log
+trait AppModule extends
+  AuthEntitiesModule with
+  WebEntityModel with
+  AuthCoreModule with
+  CoreModule with
+  WebCoreModule with
+  AuthModule with
+  WebModule
+
+trait TestModule extends AppModule with LogSupport {
+//  override implicit def htmlSource[T: CalmUri](implicit auth: AuthManager@@Default): HtmlSource[T] =
+//    super.htmlSource.log
+  def mocAuthClient: AuthManager@@NoStorage =
+    AuthManager.pure(Future.successful("<SessionId>".@@[SessionIdTag])).@@[NoStorage]
 }
 
-object AuthDev extends
-  TestSuite with
-  MocWebModule with
-  LogSupport with
-  AuthMocModule {
-//  override implicit lazy val noStorageAuth: AuthManager@@NoStorage = mocAuthClient//.log
+object AuthDev extends TestSuite with TestModule
+{
+  override implicit lazy val noStorageAuth: AuthManager@@NoStorage = mocAuthClient//.log
   val host = Uri("https://calm.dhamma.org")
   implicit def seq2query(seq: Seq[(String, String)]): Uri.Query = Uri.Query(seq.toMap)
   implicit def string2Path(str: String): Path = Path(str)
@@ -57,7 +66,7 @@ object AuthDev extends
   }
 }
 
-trait AuthMocModule extends AuthModule {
-  def mocAuthClient: AuthManager@@NoStorage =
-    AuthManager.pure(Future.successful("<SessionId>".@@[SessionIdTag])).taggedWith[NoStorage]
+trait AuthMocModule {
+  this: AuthModule with AuthCoreModule with AuthEntitiesModule =>
+
 }

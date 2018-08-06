@@ -14,7 +14,7 @@ trait AuthEntitiesModule {
   case class Credentials(login: Login, password: String @@ Password, sid: String @@ SessionId)
 }
 
-trait WebEntityModel  {
+trait WebEntityModel {
   trait HtmlContent[T]
   trait JsonContent[T]
 }

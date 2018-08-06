@@ -10,7 +10,8 @@ import scala.concurrent.Future
 import org.gbz.Tag._
 import org.gbz.Global._
 
-trait WebModule extends WebCoreModule with AuthCoreModule{
+trait WebModule {
+  this: WebCoreModule with AuthCoreModule with CoreModule with AuthEntitiesModule =>
   trait CalmUri[T] extends Apply[CalmUri,T,Uri]
 
   def xmlHeaders: ISeq[HttpHeader] = scala.collection.immutable.Seq(
