@@ -1,24 +1,40 @@
 package org.gbz.calm.model
 
-import org.gbz.calm.CalmEnums.{ApplicantState, ApplicantStates}
+import org.gbz.calm.CalmEnums.{ApplicantState, ApplicantStates, Gender, Role}
 import org.gbz.calm.CalmEnums.ApplicantStates.{Cancelled, Completed, Left}
 import org.gbz.calm.CalmEnums.Genders.{Female, Male}
 import org.gbz.calm.CalmEnums.Roles.{NewStudent, OldStudent, Server}
 
 import scala.collection.immutable
 
-case class AppList(apps: Seq[MergedApplicantRecord]) {
-  def filterT[V](extractor: MergedApplicantRecord => V)(st: V*) =
-    AppList(apps.filter(x => st.contains(extractor(x))))
+object AppList {
+  trait Extractor[T] { def extractor: MergedApplicantRecord => T}
 
-  def n: AppList = filterT(_.role)(NewStudent)
-  def o: AppList = filterT(_.role)(OldStudent)
-  def s: AppList = filterT(_.role)(Server)
-  def m: AppList = filterT(_.gender)(Male)
-  def f: AppList = filterT(_.gender)(Female)
-  def complete: AppList = filterT(_.state)(Completed)
-  def left: AppList = filterT(_.state)(Left)
-  def cancelled: AppList = filterT(_.state)(Cancelled)
+  implicit val roleExt: Extractor[Role] = Extractor.pure(_.role)
+  implicit val genderExt: Extractor[Gender] = Extractor.pure(_.gender)
+  implicit val stateExt: Extractor[ApplicantState] = Extractor.pure(_.state)
+
+  object Extractor {
+    def apply[T](implicit extractor: Extractor[T]) = extractor
+    def pure[T](f: MergedApplicantRecord => T) = new Extractor[T] {def extractor = f}
+  }
+}
+
+case class AppList(apps: Seq[MergedApplicantRecord]) {
+  import AppList._
+
+  def filter[T](st: T*)(implicit ext: Extractor[T]): AppList =
+    AppList(apps.filter(x => st.contains(ext.extractor(x))))
+  implicit def t2f[T](st: T)(implicit ext: Extractor[T]): AppList = filter(st)
+
+  def n: AppList = NewStudent
+  def o: AppList = OldStudent
+  def s: AppList = Server
+  def m: AppList = Male
+  def f: AppList = Female
+  def complete: AppList = Completed
+  def left: AppList = Left
+  def cancelled: AppList = Cancelled
 
   def states: List[(ApplicantState, Int)] = ApplicantStates.values
     .map(x => x -> apps.count(_.state == x))

@@ -1,9 +1,10 @@
+package org.gbz.calm
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.{OverflowStrategy, ThrottleMode}
 import akka.stream.scaladsl.{Flow, Sink, Source}
-import org.gbz.calm.CalmDb
+import akka.stream.{OverflowStrategy, ThrottleMode}
 import org.gbz.calm.Global._
 import org.json4s.jackson.Serialization.write
 
@@ -33,7 +34,6 @@ object UserDataProcessor{
 object WebServer {
   def main(args: Array[String]) {
     import scala.concurrent.duration._
-    import org.gbz.ExtUtils._
 
     val cId = 4053
     def greeter: Flow[Message, Message, Any] = Flow.fromSinkAndSource(Sink.foreach{

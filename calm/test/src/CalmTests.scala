@@ -1,6 +1,7 @@
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
 import akka.stream.scaladsl.{Sink, Source}
+import org.gbz.utils.log.Log._
 import org.gbz.ExtUtils._
 import org.gbz.calm._
 import org.gbz.calm.model.{AppListRequests, CourseListRequest}
@@ -19,8 +20,9 @@ object CalmTests extends TestSuite{
   val tests = Tests{
 
     'SignIn - {
+      import wvlet.airframe._
       for {
-        auth <- Authentication.cookie
+        auth <- bind[Authentication].cookie
         result <- Http().singleRequest(Get("https://calm.dhamma.org/en/courses").addHeader(auth))
         _ <- result.traceWith(_.status).discardEntityBytes().future()
       } yield auth
@@ -99,7 +101,7 @@ object CalmTests extends TestSuite{
       for {
         courseData <- AppListRequests.merged(course.cId)
         _ = CalmDb.update(courseData)
-      } yield courseData.apps.mkString("\n").log
+      } yield courseData.apps.mkString("\n")
     }
   }
 }

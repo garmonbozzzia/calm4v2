@@ -33,16 +33,16 @@ object AppListJsonParser {
 
   case class CourseDataOnly(course_id: Int, venue_name: String, start_date: String, end_date: String)
 
-  def extractAppList(data: String) = {
+  def extractAppList(data: String): Seq[ApplicantRecord] = {
     val json = parse(data)
     val cId = (json\"course_id").extract[Int]
-    def f(jsonArray: JValue, role: Role, gender: Gender ) =
+    def f(jsonArray: JValue, gender: Gender, role: Role ) =
       jsonArray.extract[Seq[ApplicantJsonRecord]].sorted.map(_.app(cId, role, gender))
-    f(json \ "sitting" \ "male" \ "new", NewStudent, Male ) ++
-      f(json \ "sitting" \ "male" \ "old", OldStudent, Male) ++
-      f(json \ "sitting" \ "female" \ "new", NewStudent, Female) ++
-      f(json \ "sitting" \ "female" \ "old", OldStudent, Female) ++
-      f(json \ "serving" \ "male", Server, Male) ++
-      f(json \ "serving" \ "female", Server, Female)
+    f(json \ "sitting" \ "male" \ "new", Male, NewStudent) ++
+      f(json \ "sitting" \ "male" \ "old", Male, OldStudent) ++
+      f(json \ "sitting" \ "female" \ "new", Female, NewStudent) ++
+      f(json \ "sitting" \ "female" \ "old", Female, OldStudent) ++
+      f(json \ "serving" \ "male", Male, Server) ++
+      f(json \ "serving" \ "female", Female, Server)
   }
 }

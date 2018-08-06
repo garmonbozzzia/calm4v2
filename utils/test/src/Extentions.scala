@@ -1,7 +1,10 @@
+package org.gbz
+
 import utest._
 object ExtensionsTest extends TestSuite {
   val tests = Tests {
     import org.gbz.ExtUtils._
+    import org.gbz.utils.log.Log._
     * - {
       def f1(n: Int) = n.toString
       def f2: Int => String = _.toString

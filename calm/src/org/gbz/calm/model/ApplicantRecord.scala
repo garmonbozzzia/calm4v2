@@ -1,6 +1,6 @@
 package org.gbz.calm.model
-import org.gbz.calm.CalmEnums.{toString => _, _}
 import ammonite.ops.Extensions._
+import org.gbz.calm.CalmEnums._
 
 case class ApplicantRecord(cId: CourseId, aId: AppId, displayId: DisplayId, givenName: String, familyName: String,
                            age: Int, gender: Gender, role: Role, pregnant: Boolean,

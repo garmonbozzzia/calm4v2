@@ -5,7 +5,7 @@ import java.util
 import akka.stream.scaladsl.{Sink, Source}
 import Global._
 import akka.Done
-import org.gbz.ExtUtils._
+import org.gbz.utils.log.Log._
 import org.gbz.calm.model.{AppListRequests, CourseListRequest, CourseRecord}
 
 import scala.concurrent.Future
@@ -17,6 +17,7 @@ object CalmApps extends App {
   def courseTypes = Calm.redisCourseList.c10d.dullabha.courses.map(_.status).distinct
 
   import scala.concurrent.duration._
+  import org.gbz.calm.model.Parser._
 
   "Running...".trace
 

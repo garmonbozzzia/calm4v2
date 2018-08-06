@@ -1,8 +1,10 @@
+package org.gbz
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.Get
-import utest._
-import org.gbz.ExtUtils._
 import org.gbz.calm.Global.system
+import org.gbz.utils.log.Log._
+import utest._
 
 import scala.concurrent.Await
 
@@ -24,7 +26,7 @@ object Sandbox extends TestSuite{
 
       Enum.withName("red").trace.id.trace
       Enum(Enum.withName("blue").trace.id.trace).trace
-      Enum.withName("green")
+//      Enum.withName("green")
     }
 
     'GoogleTest - {

@@ -5,6 +5,7 @@ import com.redis.{RedisClient, RedisClientPool}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import org.json4s.jackson.Serialization.write
+import org.gbz.utils.log.Log._
 import org.gbz.ExtUtils._
 import Global._
 import com.redis.serialization.Format

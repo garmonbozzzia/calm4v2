@@ -6,14 +6,12 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}
 import ammonite.ops.{Path, pwd}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
-import org.gbz.ExtUtils._
+import org.gbz.utils.log.Log._
 import org.json4s._
 
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-
-/* Created on 19.04.18 */
 object Global {
   implicit val system: ActorSystem = ActorSystem()
 
@@ -48,7 +46,7 @@ object Global {
     constructorMirror(constructorArgs:_*).asInstanceOf[T]
   }
 
-  def toImmutable[A](elements: Iterable[A]): immutable.Iterable[A] =
+  implicit def toImmutable[A](elements: Iterable[A]): immutable.Iterable[A] =
     new scala.collection.immutable.Iterable[A] {
       override def iterator: Iterator[A] = elements.toIterator
     }
