@@ -12,15 +12,6 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.{higherKinds, implicitConversions}
 
-trait AppModule extends
-  AuthEntitiesModule with
-  WebEntityModel with
-  AuthCoreModule with
-  CoreModule with
-  WebCoreModule with
-  AuthModule with
-  WebModule
-
 trait TestModule extends AppModule with LogSupport {
 //  override implicit def htmlSource[T: CalmUri](implicit auth: AuthManager@@Default): HtmlSource[T] =
 //    super.htmlSource.log
