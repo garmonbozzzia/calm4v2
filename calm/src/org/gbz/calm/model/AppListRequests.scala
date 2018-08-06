@@ -8,6 +8,7 @@ import org.gbz.calm.{Calm, CalmDb, CalmUri}
 
 import scala.collection.immutable
 import scala.concurrent.Future
+import org.gbz.ExtUtils._
 
 object AppListRequests {
   type AppList1 = Seq[ApplicantRecord]
@@ -18,10 +19,9 @@ object AppListRequests {
   }
 
   def fromJson(cId: CourseId): CalmRequest[AppList1] = new CalmRequest[AppList1] {
-    override def uri: Uri =
-      CalmUri.courseUri(cId.toInt)
-    override def headers: immutable.Seq[RawHeader] =
-      Calm.xmlHeaders
+    override def uri: Uri = CalmUri.courseUri(cId.toInt)
+    override def parseEntity(data: String): Seq[ApplicantRecord] = AppListJsonParser.extractAppList(data.trace)
+    override def headers: immutable.Seq[RawHeader] = Calm.xmlHeaders
   }
 
   import ammonite.ops.Extensions._

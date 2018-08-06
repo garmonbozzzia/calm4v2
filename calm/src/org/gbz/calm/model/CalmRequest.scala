@@ -19,7 +19,7 @@ trait CalmRequest[Entity] extends AuthenticationBind{
       request = Get(uri).withHeaders(auth +: headers)
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield parser.parse(json.utf8String)
+    } yield parseEntity(json.utf8String)
 }
 
 trait Parser[T] {
