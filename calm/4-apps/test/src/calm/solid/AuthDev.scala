@@ -9,17 +9,33 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.higherKinds
 
+import org.gbz.Tag._
+
+trait WebModule {
+  trait HtmlSource[T]
+  trait JsonSource[T]
+  trait CourseListTag
+  object AllCourses extends CourseListTag
+}
+
 object AuthDev extends
   TestSuite with
+  WebModule with
   LogSupport with
-  Designs with
   AuthMocModule {
 
-  override implicit val authClient: AuthDev.AuthClient = mocAuthClient
+  override implicit val authClient = mocAuthClient
 
   override def tests = Tests{
+    'WebClient - {
+
+    }
     'Storage{
-      implicitly[AuthManager].sessionId
+      for{
+        _ <- AuthManager[Int].sessionId
+        _ <- AuthManager[Int].sessionId
+        _ <- AuthManager[Int].sessionId
+      } yield "Done"
     }
   }
 

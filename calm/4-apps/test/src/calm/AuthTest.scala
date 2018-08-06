@@ -6,7 +6,6 @@ import org.gbz.Global._
 import org.gbz.Tag._
 import org.gbz.utils.log.Log._
 import utest._
-import wvlet.airframe._
 
 import scala.concurrent.{Await, Future}
 import scala.util.Try
@@ -24,8 +23,7 @@ class MocSessionStorage extends Storage[SessionId] {
   override def read[U](key: U) = None
 }
 
-import ammonite.ops.{write => writeFile, read => readFile, _}
-import org.gbz.Tag._
+import ammonite.ops.{read => readFile, write => writeFile, _}
 class MocFileSessionStorage extends Storage[SessionId] {
   val filepath = pwd/'storage/'session
   override def write(obj: SessionId): Unit = writeFile(filepath, obj)

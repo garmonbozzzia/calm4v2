@@ -3,23 +3,25 @@ package calm.solid
 import scala.concurrent.Future
 import org.gbz.Global._
 import org.gbz.ExtUtils._
+import org.gbz.utils.log.Log._
 
-trait AuthCoreModule extends AuthEntitiesModule {
+trait AuthCoreModule extends AuthEntitiesModule with LogSupport {
   trait AuthStorage {
     def read(): Option[SessionId]
     def write(session: SessionId)
   }
 
-  trait AuthClient {
-    def signIn: Future[SessionId]
-  }
-
-  trait AuthManager {
+  trait NoStorage
+  trait AuthManager[T] {
     def sessionId: Future[SessionId]
   }
-
-  implicit def authManager(implicit ac:AuthClient, as:AuthStorage): AuthManager = new AuthManager {
-    override def sessionId: Future[SessionId] =
-      as.read().fold(ac.signIn.map(_ <<< as.write))(Future(_))
+  object AuthManager{
+    def apply[A](implicit v: AuthManager[A] ): AuthManager[A] = v
+    def pure[A](session: => Future[SessionId]): AuthManager[A] = new AuthManager[A] {
+      def sessionId: Future[SessionId] = session
+    }
   }
+
+  implicit def authManager[A](implicit ac:AuthManager[NoStorage], as:AuthStorage): AuthManager[A] =
+    AuthManager.pure[A](as.read().fold(ac.sessionId.map(_ <<< as.write))(Future(_))).log("Invoked")
 }

@@ -6,7 +6,6 @@ import org.gbz.Tag._
 
 
 trait AuthMocModule extends AuthModule {
-  def mocAuthClient: AuthClient = new AuthClient {
-    override def signIn: Future[SessionId] = Future.successful("<SessionId>".@@[SessionIdTag])
-  }
+  def mocAuthClient: AuthManager[NoStorage] =
+    AuthManager.pure[NoStorage](Future.successful("<SessionId>".@@[SessionIdTag]))
 }
