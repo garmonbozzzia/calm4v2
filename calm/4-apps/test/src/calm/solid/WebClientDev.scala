@@ -1,13 +1,12 @@
 package calm.solid
 
 import akka.http.scaladsl.Http
-import org.gbz.Global.{materializer, system}
-import org.gbz.utils.log.Log.LogSupport
 import utest._
-
 import scala.concurrent.Await
 import concurrent.duration._
+import org.gbz.utils.log.Log.LogSupport
 import org.gbz.Global._
+import scala.language.postfixOps
 
 object WebClientDev extends
   TestSuite with

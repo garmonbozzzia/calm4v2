@@ -47,8 +47,4 @@ object SandboxObjects{
     }
   }
   val res = convert(fooo)
-
-//  def caseT[A,B] = new {
-////    def apply(a:A):B =
-//  }
 }

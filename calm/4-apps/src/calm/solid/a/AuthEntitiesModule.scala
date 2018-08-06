@@ -2,9 +2,6 @@ package calm.solid
 
 import org.gbz.Tag.@@
 
-//todo Refactor LogSupport
-//todo How to abstract ApplyObject?
-
 trait AuthEntitiesModule {
   trait Default
   trait NoStorage

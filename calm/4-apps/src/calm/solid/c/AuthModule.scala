@@ -11,9 +11,9 @@ import org.gbz.utils.log.Log._
 import scala.concurrent.Future
 
 trait AuthModule extends AuthCoreModule{
-  implicit lazy val authStorage: AuthStorage = inMemoAuthStorage//.logWith(x => "!!!" + x.toString)
-  implicit lazy val noStorageAuth: AuthManager @@ NoStorage = calm4AuthClient//.log
-  implicit lazy val authManager: AuthManager@@Default = withStorage(noStorageAuth)//.log
+  implicit lazy val authStorage: AuthStorage = inMemoAuthStorage
+  implicit lazy val noStorageAuth: AuthManager @@ NoStorage = calm4AuthClient
+  implicit lazy val authManager: AuthManager@@Default = withStorage(noStorageAuth)
 
   def inMemoAuthStorage: AuthStorage = new AuthStorage with LogSupport {
     var value: Option[SessionId] = None
@@ -24,10 +24,10 @@ trait AuthModule extends AuthCoreModule{
   def calm4AuthClient(implicit credentials: Credentials): AuthManager@@NoStorage = {
     val expiredId = Cookie("_sso_session", credentials.sid)
     val signInRequest =
-    Post("https://calm.dhamma.org/en/users/sign_in", FormData(
-      "user[login]" -> credentials.login,
-      "user[password]" -> credentials.password,
-      "commit" -> "Log In")).addHeader(expiredId)
+      Post("https://calm.dhamma.org/en/users/sign_in", FormData(
+        "user[login]" -> credentials.login,
+        "user[password]" -> credentials.password,
+        "commit" -> "Log In")).addHeader(expiredId)
     AuthManager.pure(for {
       response <- Http().singleRequest(signInRequest)
       _ <- response.discardEntityBytes().future()
@@ -35,7 +35,7 @@ trait AuthModule extends AuthCoreModule{
         .fold(Future.failed[String](new Exception("Login failed")))(Future.successful)
     } yield session)
   }
-  implicit def credintals: Credentials = {
+  implicit def credentials: Credentials = {
     val Seq(login, password, oldSessionId) = scala.io.Source.fromFile("data/login2").getLines().toSeq
     Credentials(login.@@[LoginTag], password, oldSessionId)
   }
