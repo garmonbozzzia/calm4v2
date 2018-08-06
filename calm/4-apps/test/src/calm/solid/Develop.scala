@@ -10,7 +10,9 @@ import org.gbz.utils.log.Log._
 import utest._
 import wvlet.airframe._
 import akka.http.scaladsl.client.RequestBuilding.Get
+import akka.http.scaladsl.model.{HttpHeader, Uri}
 
+import scala.collection.immutable.{Seq => ISeq}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Try
@@ -62,16 +64,17 @@ object WebClientA{
 
 trait WebClientSettings {
   implicit val keyInt: Key[Int] = bind[Key[Int]]
-  implicit val vldStr: Validator[String] = bind[Validator[String]]
-  implicit val cuInt: CalmUri[CourseListTag] = bind[CalmUri[CourseListTag]](CalmUri.coursesUri)
-//  implicit val chStr: CalmHeaders[String] = bind[CalmHeaders[String]]
+  implicit val vldStr: Validator[String] = bind[Validator[String]](Validator.pure[String])
+  implicit val cuClt: CalmUri[CourseListTag] = bind[CalmUri[CourseListTag]](CalmUri.coursesUri)
+  implicit val cuInt: CalmUri[Int] = bind[CalmUri[Int]]
+  implicit val chStr: CalmHeaders[String] = bind[CalmHeaders[String]](CalmHeaders.pure[String](ISeq.empty[HttpHeader]))
 
-  implicit def wcCached[A:Key,B:Validator]: WebClientA[A,B] = WebClientA.cached[A,B]
+//  implicit val wc: WebClientA[Int, String] = bind[WebClientA[Int,String]](WebClientA.cached)
+//  implicit val wcIc: WebClientA[Int, String] = WebClientA.cached
+//  implicit def wcCached[A:Key,B:Validator]: WebClientA[A,B] = WebClientA.cached[A,B]
   implicit def wcCalm[A:CalmUri,B:CalmHeaders]: WebClientA[A,B] = WebClientA.calm4[A,B]
-//  def wcFactory[A,B]: WebClientA[A,B]
-//  implicit val wcFactory: WebClientA[Int,String] = WebClientA.cached
 
-  implicit val wc: WebClientA[Int, String] = bind[WebClientA[Int,String]](WebClientA.cached)
+
 }
 
 trait AppSettings{
@@ -80,17 +83,22 @@ trait AppSettings{
 
 trait WebClientApp extends AppSettings {
   import wcSettings._
-  val wc: WebClientA[Int, String] = WebClientA[Int,String]
+  val kInt = Key[Int]
+  val wc = WebClientA[Int,String]//(wcSettings.wc)
 }
 
 object Develop extends TestSuite with LogSupport with Designs {
   override def tests = Tests{
+    'Auth{
+
+    }
     * - {
       val wc = newDesign
-        .bind[Validator[String]].toInstance(Validator.pure[String])
+//        .bind[Validator[String]].toInstance(Validator.pure[String])
         .bind[Key[Int]].toInstance(_ => pwd/'data/'login)
-        .bind[WebClientA[Int,String]]
-        .toInstanceProvider[Key[Int], Validator[String]](WebClientA.cached(_,_))
+        .bind[CalmUri[Int]].toInstance(_ => Uri./)
+//        .bind[WebClientA[Int,String]]
+//        .toInstanceProvider[Key[Int], Validator[String]](WebClientA.cached(_,_))
         .newSession.build[WebClientApp].wc
       wc.get(10)
     }
