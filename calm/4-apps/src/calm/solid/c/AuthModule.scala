@@ -10,7 +10,8 @@ import org.gbz.utils.log.Log._
 
 import scala.concurrent.Future
 
-trait AuthModule extends AuthCoreModule{
+trait AuthModule {
+  this: AuthCoreModule with AuthEntitiesModule =>
   implicit lazy val authStorage: AuthStorage = inMemoAuthStorage
   implicit lazy val noStorageAuth: AuthManager @@ NoStorage = calm4AuthClient
   implicit lazy val authManager: AuthManager@@Default = withStorage(noStorageAuth)

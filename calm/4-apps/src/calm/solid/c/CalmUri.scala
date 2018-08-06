@@ -8,9 +8,6 @@
 //import scala.collection.immutable
 //import scala.language.implicitConversions
 //
-//trait CalmUri[-A]{
-//  def uri(a:A): Uri
-//}
 //
 //object CalmUri{
 //  def apply[A](implicit uri: CalmUri[A]): CalmUri[A] = uri

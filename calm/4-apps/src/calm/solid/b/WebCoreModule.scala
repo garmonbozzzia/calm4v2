@@ -3,7 +3,8 @@ package calm.solid
 import org.gbz.Tag.@@
 import scala.concurrent.Future
 
-trait WebCoreModule extends WebEntityModel with AuthCoreModule{
+trait WebCoreModule {
+  this: WebEntityModel with CoreModule =>
 
   def html[A:HtmlSource](t:A): Future[String @@ HtmlContent[A]] = HtmlSource[A](t)
   def json[A:JsonSource](t:A): Future[String @@ JsonContent[A]] = JsonSource[A](t)
