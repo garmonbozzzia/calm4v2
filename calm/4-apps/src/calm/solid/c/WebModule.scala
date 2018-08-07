@@ -25,7 +25,7 @@ trait WebModule {
   implicit def jsonSource[T:CalmUri](implicit auth: AuthManager@@Default): JsonSource[T] =
     content(_,xmlHeaders)
 
-  implicit def content[A,B](a:A, headers: ISeq[HttpHeader])(
+  def content[A,B](a:A, headers: ISeq[HttpHeader])(
     implicit uri: CalmUri[A], auth: AuthManager@@Default): Future[String@@B] =
     for {
       auth <- auth.sessionId.map(Cookie("_sso_session", _))

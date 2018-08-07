@@ -16,7 +16,7 @@ trait AuthCoreModule extends LogSupport {
 
   trait AuthStorage {
     def read(): Option[SessionId]
-    def write(session: SessionId)
+    def write(session: SessionId): Unit
   }
 
   trait AuthManager {
