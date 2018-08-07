@@ -11,8 +11,7 @@ import org.gbz.Tag._
 import org.gbz.Global._
 
 trait WebModule {
-  this: WebCoreModule with AuthCoreModule with CoreModule with AuthEntitiesModule =>
-  trait CalmUri[T] extends Apply[CalmUri,T,Uri]
+  this: CoreModule with EntitiesModule with CalmUriModule =>
 
   def xmlHeaders: ISeq[HttpHeader] = scala.collection.immutable.Seq(
     RawHeader("Accept", "application/json, text/javascript, */*; q=0.01"),

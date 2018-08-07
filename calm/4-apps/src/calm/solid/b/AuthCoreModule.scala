@@ -7,7 +7,7 @@ import org.gbz.Tag.@@
 import org.gbz.utils.log.Log._
 
 trait AuthCoreModule extends LogSupport {
-  this: CoreModule with AuthEntitiesModule =>
+  this: CommonCoreModule with AuthEntitiesModule =>
 
   def sessionId[T](implicit a:AuthManager@@Default): Future[SessionId] = a.sessionId
 

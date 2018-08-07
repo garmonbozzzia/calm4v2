@@ -1,20 +1,15 @@
 package calm.solid
 
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.model.Uri.Path
-import org.gbz.Global.{materializer, system, _}
-import org.gbz.Tag._
-import org.gbz.utils.log.Log._
 import utest._
-
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.{higherKinds, implicitConversions}
+import org.gbz.Global.{materializer, system, _}
+import org.gbz.Tag._
+import org.gbz.utils.log.Log._
 
 trait TestModule extends AppModule with LogSupport {
-//  override implicit def htmlSource[T: CalmUri](implicit auth: AuthManager@@Default): HtmlSource[T] =
-//    super.htmlSource.log
   def mocAuthClient: AuthManager@@NoStorage =
     AuthManager.pure(Future.successful("<SessionId>".@@[SessionIdTag])).@@[NoStorage]
 }
@@ -22,13 +17,18 @@ trait TestModule extends AppModule with LogSupport {
 object AuthDev extends TestSuite with TestModule
 {
   override implicit lazy val noStorageAuth: AuthManager@@NoStorage = mocAuthClient//.log
-  val host = Uri("https://calm.dhamma.org")
-  implicit def seq2query(seq: Seq[(String, String)]): Uri.Query = Uri.Query(seq.toMap)
-  implicit def string2Path(str: String): Path = Path(str)
 
   override def tests = Tests{
+    'Uri - {
+      uri("Игнатьев".@@[SearchTag])
+      uri[AppRequest](123.@@[AppIdTag] -> 4053.@@[CourseIdTag]).log
+      uri[CourseListRequest](().taggedWith[CourseListRequestTag]).log
+//      uri[AppRequest](123 -> 4053)
+//      val bbb: Option[Int@@String] = Some(1)
+//      val bbb: Option[Int@@String] = toTaggedOption(Some(1))
+    }
+
     'WebClient - {
-      implicit val mocUri: CalmUri[Int] = id => host.withPath(s"/en/courses/$id/course_applications")
 //      for{
 //        htmlPage <- html(4053)
 //        jsonPage <- json(4053)
@@ -38,6 +38,7 @@ object AuthDev extends TestSuite with TestModule
 //        .logWarn("MSG")
       //todo выяснить почему сообщения печатаются в неправильном порядке
     }
+
     'Storage{
       for{
         _ <- sessionId
@@ -59,5 +60,4 @@ object AuthDev extends TestSuite with TestModule
 
 trait AuthMocModule {
   this: AuthModule with AuthCoreModule with AuthEntitiesModule =>
-
 }

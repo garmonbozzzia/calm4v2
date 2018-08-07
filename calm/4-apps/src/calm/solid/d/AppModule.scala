@@ -1,13 +1,11 @@
 package calm.solid
 
 trait AppModule extends
-  AuthEntitiesModule with
-  WebEntityModel with
-  AuthCoreModule with
+  EntitiesModule with
   CoreModule with
-  WebCoreModule with
   AuthModule with
-  WebModule
+  WebModule with
+  CalmUriModule
 
 object MainApp extends App with AppModule {
 
