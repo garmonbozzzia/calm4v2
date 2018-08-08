@@ -13,13 +13,13 @@ import scala.concurrent.Future
 trait CalmRequest[Entity] extends AuthenticationBind{
   def uri: Uri
   def headers: scala.collection.immutable.Seq[HttpHeader] = Nil
-  def http(implicit parser: Parser[Entity]): Future[Entity] =
-    for {
-      auth <- authentication.cookie
-      request = Get(uri).withHeaders(auth +: headers)
-      response <- Http().singleRequest(request)
-      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
-    } yield parseEntity(json.utf8String)
+  def http(implicit parser: Parser[Entity]): Future[Entity] = ???
+//    for {
+//      auth <- authentication.cookie
+//      request = Get(uri).withHeaders(auth +: headers)
+//      response <- Http().singleRequest(request)
+//      json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)
+//    } yield parseEntity(json.utf8String)
 }
 
 trait Parser[T] {
