@@ -54,7 +54,14 @@ trait TestableModule extends ScalaModule2_12 {
 
 trait ScalaModule2_12 extends ScalaModule with ExtendedRepo {
   def scalaVersion = "2.12.4"
-  def scalacOptions = Seq("-feature", "-language:higherKinds", "-language:postfixOps")
+  def scalacOptions = Seq(
+    "-feature",
+    "-language:higherKinds",
+    "-language:postfixOps",
+    "-language:implicitConversions",
+    "-language:existentials",
+    "-language:reflectiveCalls"
+  )
 }
 
 trait MacroModule extends ScalaModule2_12 {
