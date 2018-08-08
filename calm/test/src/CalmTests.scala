@@ -9,7 +9,7 @@ import utest._
 
 import scala.concurrent.Await
 
-object CalmTests extends TestSuite{
+object CalmTests extends TestSuite with LogSupport {
   import org.gbz.calm.Global._
 
   override def utestAfterAll(): Unit = {

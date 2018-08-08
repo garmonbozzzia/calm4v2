@@ -17,10 +17,9 @@ object AppListRequests {
   def fromHtml(cId: CourseId): CalmRequest[AppList2] = new CalmRequest[AppList2] {
     override def uri: Uri = CalmUri.courseUri(cId.toInt)
   }
-
   def fromJson(cId: CourseId): CalmRequest[AppList1] = new CalmRequest[AppList1] {
     override def uri: Uri = CalmUri.courseUri(cId.toInt)
-    override def parseEntity(data: String): Seq[ApplicantRecord] = AppListJsonParser.extractAppList(data.trace)
+    def parseEntity(data: String): Seq[ApplicantRecord] = AppListJsonParser.extractAppList(data)
     override def headers: immutable.Seq[RawHeader] = Calm.xmlHeaders
   }
 

@@ -4,19 +4,13 @@ import org.gbz.Tag.@@
 import scala.concurrent.Future
 
 trait WebCoreModule {
-  this: WebEntityModel with CoreModule =>
+  this: WebEntityModel with CommonCoreModule =>
 
-  def html[A:HtmlSource](t:A): Future[String @@ HtmlContent[A]] = HtmlSource[A](t)
-  def json[A:JsonSource](t:A): Future[String @@ JsonContent[A]] = JsonSource[A](t)
+  def html[A:HtmlSource](t:A): Future[String @@ HtmlContent[A]] = HtmlSource[A].apply(t)
+  trait HtmlSource[T] extends Apply[T,Future[String@@HtmlContent[T]]]
+  object HtmlSource extends Instance[HtmlSource]
 
-  trait HtmlSource[T] extends Apply[HtmlSource,T,Future[String@@HtmlContent[T]]]
-  trait JsonSource[T] extends Apply[JsonSource,T,Future[String@@JsonContent[T]]]
-
-  object JsonSource {
-    def apply[A](a:A)(implicit v: JsonSource[A]): Future[String @@ JsonContent[A]] = v(a)
-  }
-
-  object HtmlSource {
-    def apply[A](a:A)(implicit v: HtmlSource[A]): Future[String @@ HtmlContent[A]] = v(a)
-  }
+  def json[A:JsonSource](t:A): Future[String @@ JsonContent[A]] = JsonSource[A].apply(t)
+  trait JsonSource[T] extends Apply[T,Future[String@@JsonContent[T]]]
+  object JsonSource extends Instance[JsonSource]
 }
