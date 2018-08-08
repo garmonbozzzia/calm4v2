@@ -14,18 +14,18 @@ object MockModules{
 
   trait MocHtmlSource{
     this: AppModule =>
-    override def htmlSource[T: CalmUri](implicit auth: AuthManager @@ Default): HtmlSource[T] =
+    override def htmlSource[T: CalmUri](implicit auth: AuthManager): HtmlSource[T] =
       x => Future(s"[HtmlContent: <$x>]")
   }
 
   trait MocJsonSource{
     this: AppModule =>
-    override def jsonSource[T: CalmUri](implicit auth: AuthManager @@ Default): JsonSource[T] =
+    override def jsonSource[T: CalmUri](implicit auth: AuthManager): JsonSource[T] =
       x => Future(s"[JsonContent: <$x>]")
   }
 
   trait MocAuthStorage{
     this: AppModule =>
-    override implicit lazy val authStorage: AuthStorage = ???
+    override lazy val authStorage: AuthStorage = ???
   }
 }

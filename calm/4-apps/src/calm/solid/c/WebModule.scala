@@ -19,16 +19,16 @@ trait WebModule {
     RawHeader("Referer", "")
   )
 
-  implicit def htmlSource[T:CalmUri](implicit auth: AuthManager@@Default): HtmlSource[T] =
+  implicit def htmlSource[T:CalmUri](implicit auth: AuthManager): HtmlSource[T] =
     content(_,ISeq.empty)
 
-  implicit def jsonSource[T:CalmUri](implicit auth: AuthManager@@Default): JsonSource[T] =
+  implicit def jsonSource[T:CalmUri](implicit auth: AuthManager): JsonSource[T] =
     content(_,xmlHeaders)
 
   def content[A,B](a:A, headers: ISeq[HttpHeader])(
-    implicit uri: CalmUri[A], auth: AuthManager@@Default): Future[String@@B] =
+    implicit uri: CalmUri[A], auth: AuthManager): Future[String@@B] =
     for {
-      auth <- auth.sessionId.map(Cookie("_sso_session", _))
+      auth <- auth.value.map(Cookie("_sso_session", _))
       request = Get(uri(a)).withHeaders(auth +: headers)
       response <- Http().singleRequest(request)
       json <- response.entity.dataBytes.runFold(ByteString.empty)(_ ++ _)

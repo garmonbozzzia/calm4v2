@@ -13,8 +13,8 @@ import scala.concurrent.Future
 trait AuthModule {
   this: AuthCoreModule with AuthEntitiesModule =>
   implicit lazy val authStorage: AuthStorage = inMemoAuthStorage
-  implicit lazy val authClient: AuthManager @@ NoStorage = calm4AuthClient
-  implicit lazy val authManager: AuthManager@@Default = withStorage(authClient)
+  lazy val authClient: AuthManager = calm4AuthClient
+  implicit lazy val authManager: AuthManager = withStorage(authClient)
 
   def inMemoAuthStorage: AuthStorage = new AuthStorage with LogSupport {
     var value: Option[SessionId] = None

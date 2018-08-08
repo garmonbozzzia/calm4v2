@@ -9,23 +9,21 @@ import org.gbz.utils.log.Log._
 trait AuthCoreModule extends LogSupport {
   this: CommonCoreModule with AuthEntitiesModule =>
 
-  def sessionId[T](implicit a:AuthManager@@Default): Future[SessionId] = a.sessionId
+  def sessionId[T](implicit a:AuthManager): Future[SessionId] = a.value
 
   def withStorage(ac:AuthManager)(implicit as:AuthStorage): AuthManager =
-    AuthManager.pure(as.read().fold(ac.sessionId.map(_ <<< as.write))(Future(_)))
+    AuthManager.pure(as.read().fold(ac.value.map(_ <<< as.write))(Future(_)))
 
   trait AuthStorage {
     def read(): Option[SessionId]
     def write(session: SessionId): Unit
   }
 
-  trait AuthManager {
-    def sessionId: Future[SessionId]
-  }
+  trait AuthManager extends Value[Future[SessionId]]
 
   object AuthManager{
     def pure(session: => Future[SessionId]): AuthManager = new AuthManager {
-      def sessionId: Future[SessionId] = session
+      def value: Future[SessionId] = session
     }
   }
 }
