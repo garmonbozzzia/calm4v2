@@ -8,23 +8,10 @@ import utest._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.language.{higherKinds, implicitConversions}
-
-
-trait StorageCoreModule {
-  this: CommonCoreModule =>
-  def read[B,A:Curry[Reader,B]#L](a:A):B = Reader[A,B].apply(a)
-  def read[A:ReaderSingle]: A = ReaderSingle[A].value
-  def write[A:Writer]: Unit
-  trait Writer[A] extends Apply[A,Unit]
-  trait Reader[A,B] extends Apply[A,B]
-  object Reader extends Instance2[Reader]
-  object ReaderSingle extends Instance[ReaderSingle]
-  trait ReaderSingle[A] extends Value[A]
-}
+import scala.language.{higherKinds, implicitConversions, postfixOps}
 
 object Develop extends TestSuite with AppModule
-  //with MocAuthStorage
+  with MocAuthStorage
   with MocAuthClient
   with MocHtmlSource
   with MocJsonSource

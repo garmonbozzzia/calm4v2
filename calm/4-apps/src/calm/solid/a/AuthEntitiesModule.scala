@@ -3,8 +3,6 @@ package calm.solid
 import org.gbz.Tag.@@
 
 trait AuthEntitiesModule {
-  trait Default
-  trait NoStorage
   trait LoginTag
   trait PasswordTag
   trait SessionIdTag

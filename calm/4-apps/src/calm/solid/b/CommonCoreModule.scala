@@ -23,6 +23,6 @@ trait CommonCoreModule {
 }
 
 trait CoreModule extends
-  CommonCoreModule with AuthCoreModule with CalmUriCoreModule with WebCoreModule {
+  CommonCoreModule with AuthCoreModule with CalmUriCoreModule with WebCoreModule with StorageCoreModule {
   this: EntitiesModule =>
 }

@@ -9,20 +9,22 @@ import org.gbz.Global._
 import org.gbz.utils.log.Log._
 
 import scala.concurrent.Future
+import org.gbz.ExtUtils._
 
 trait AuthModule {
-  this: AuthCoreModule with AuthEntitiesModule =>
-  implicit lazy val authStorage: AuthStorage = inMemoAuthStorage
+  this: AuthCoreModule with AuthEntitiesModule with StorageCoreModule =>
+
+  implicit lazy val sessionReader: ReaderSingle[SessionId] = ???
+  implicit lazy val sessionWriter: Writer[SessionId] = ???
+
+  def withStorage(ac:AuthManager)(implicit
+    writer: Writer[SessionId], reader:ReaderSingle[SessionId]): AuthManager =
+    AuthManager.pure(reader.value.fold(ac.value.map(_ <<< writer.apply))(Future(_)))
+
   lazy val authClient: AuthManager = calm4AuthClient
   implicit lazy val authManager: AuthManager = withStorage(authClient)
 
-  def inMemoAuthStorage: AuthStorage = new AuthStorage with LogSupport {
-    var value: Option[SessionId] = None
-    override def read(): Option[SessionId] = value.logWith(s => s"Read: $s")
-    override def write(session: SessionId): Unit = value = Some(session).logWith(s => s"Wrote: $s")
-  }
-
-  def calm4AuthClient(implicit credentials: Credentials): AuthManager@@NoStorage = {
+  def calm4AuthClient(implicit credentials: Credentials): AuthManager = {
     val expiredId = Cookie("_sso_session", credentials.sid)
     val signInRequest =
       Post("https://calm.dhamma.org/en/users/sign_in", FormData(
@@ -36,6 +38,7 @@ trait AuthModule {
         .fold(Future.failed[String](new Exception("Login failed")))(Future.successful)
     } yield session)
   }
+
   implicit def credentials: Credentials = {
     val Seq(login, password, oldSessionId) = scala.io.Source.fromFile("data/login2").getLines().toSeq
     Credentials(login.@@[LoginTag], password, oldSessionId)

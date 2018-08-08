@@ -11,9 +11,6 @@ trait AuthCoreModule extends LogSupport {
 
   def sessionId[T](implicit a:AuthManager): Future[SessionId] = a.value
 
-  def withStorage(ac:AuthManager)(implicit as:AuthStorage): AuthManager =
-    AuthManager.pure(as.read().fold(ac.value.map(_ <<< as.write))(Future(_)))
-
   trait AuthStorage {
     def read(): Option[SessionId]
     def write(session: SessionId): Unit
