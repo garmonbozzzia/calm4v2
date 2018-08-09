@@ -69,8 +69,4 @@ trait MockRedisStorage {
             .map(Converter[C, B].apply)
     }
   }
-
-  //  write[Person](Alice).log(redisMap).log(redisString)
-  //  write[Person](Bob).log(redisMap).log(redisString)
-  //  val person: Option[Person] = read(Alice).log
 }
