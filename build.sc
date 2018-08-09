@@ -1,6 +1,7 @@
 import coursier.maven.MavenRepository
 import mill._
 import mill.scalalib._
+import ammonite.ops._
 
 object Libraries {
   val akkaVersion = "2.5.14"
@@ -109,6 +110,10 @@ object calm extends TestableModule {
     )
   }
 
+  def gitdiff = T.worker{
+    %%("git", "rev-parse", "HEAD")(appsPath).out.string
+  }
+
   object core extends ScalaModule2_12 {
     override def moduleDeps = Seq(utils, model)
     override def millSourcePath = corePath
@@ -131,6 +136,13 @@ object calm extends TestableModule {
 
   object apps extends TestableModule {
 //    override def moduleDeps = Seq(utils, model, core, network, storage)
+    def gitdiff = T.input{
+//      T.sources(appsPath){
+//        %%("git", "diff", "--stat", "HEAD")(appsPath)
+//      }
+      %%("git", "diff", "--stat", "HEAD")(appsPath)
+    }
+//    override def compile = ???
     override def moduleDeps = Seq(utils)
     override def millSourcePath = appsPath
     override def ivyDeps = Agg(
