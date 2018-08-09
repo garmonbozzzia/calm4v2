@@ -6,5 +6,6 @@ trait AppModule
     with AuthModule
     with WebModule
     with CalmUriModule
+    with RedisModule
 
 object MainApp extends App with AppModule {}

@@ -42,7 +42,17 @@ trait CalmEntitiesModule {
   trait UriTag[A]
 }
 
+trait RedisEntitiesModule {
+  trait RedisKeyTag
+  type RedisKey = String@@RedisKeyTag
+  trait RedisValueTag
+  type RedisString = String
+  type RedisMap = Map[String, String]
+  type RedisList = List[String]
+}
+
 trait EntitiesModule
     extends AuthEntitiesModule
     with WebEntityModel
     with CalmEntitiesModule
+    with RedisEntitiesModule

@@ -130,9 +130,17 @@ object calm extends TestableModule {
   }
 
   object apps extends TestableModule {
-    override def moduleDeps = Seq(utils, model, core, network, storage)
+//    override def moduleDeps = Seq(utils, model, core, network, storage)
+    override def moduleDeps = Seq(utils)
     override def millSourcePath = appsPath
-    override def ivyDeps = Agg(airframeLib,shapelessLib)
+    override def ivyDeps = Agg(
+      akkaHttpLib,
+      akkaStreamLib,
+      json4sNativeLib,
+      json4sJacksonLib,
+      redisclientLib,
+      shapelessLib,
+    )
   }
 
   override def mainClass = Some("org.gbz.calm.CalmApps")

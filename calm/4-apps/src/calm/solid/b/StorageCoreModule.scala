@@ -24,5 +24,4 @@ trait StorageCoreModule {
       def value: Option[A] = v
     }
   }
-
 }

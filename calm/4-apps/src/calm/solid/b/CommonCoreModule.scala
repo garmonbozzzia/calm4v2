@@ -27,6 +27,7 @@ trait CommonCoreModule {
 
 trait CoreModule
     extends CommonCoreModule
+    with RedisCoreModule
     with AuthCoreModule
     with CalmUriCoreModule
     with WebCoreModule
