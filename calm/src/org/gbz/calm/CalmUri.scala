@@ -6,8 +6,6 @@ import org.gbz.utils.log.Log._
 import org.gbz.calm.model.{AppId, CourseId}
 
 import scala.collection.immutable
-import scala.language.implicitConversions
-
 /**
   * Created by yuri on 26.08.17.
   */

@@ -1,6 +1,7 @@
 import coursier.maven.MavenRepository
 import mill._
 import mill.scalalib._
+import ammonite.ops._
 
 object Libraries {
   val akkaVersion = "2.5.14"
@@ -54,7 +55,14 @@ trait TestableModule extends ScalaModule2_12 {
 
 trait ScalaModule2_12 extends ScalaModule with ExtendedRepo {
   def scalaVersion = "2.12.4"
-  def scalacOptions = Seq("-feature", "-language:higherKinds", "-language:postfixOps")
+  def scalacOptions = Seq(
+    "-feature",
+    "-language:higherKinds",
+    "-language:postfixOps",
+    "-language:implicitConversions",
+    "-language:existentials",
+    "-language:reflectiveCalls"
+  )
 }
 
 trait MacroModule extends ScalaModule2_12 {
@@ -102,6 +110,10 @@ object calm extends TestableModule {
     )
   }
 
+  def gitdiff = T.worker{
+    %%("git", "rev-parse", "HEAD")(appsPath).out.string
+  }
+
   object core extends ScalaModule2_12 {
     override def moduleDeps = Seq(utils, model)
     override def millSourcePath = corePath
@@ -123,9 +135,24 @@ object calm extends TestableModule {
   }
 
   object apps extends TestableModule {
-    override def moduleDeps = Seq(utils, model, core, network, storage)
+//    override def moduleDeps = Seq(utils, model, core, network, storage)
+    def gitdiff = T.input{
+//      T.sources(appsPath){
+//        %%("git", "diff", "--stat", "HEAD")(appsPath)
+//      }
+      %%("git", "diff", "--stat", "HEAD")(appsPath)
+    }
+//    override def compile = ???
+    override def moduleDeps = Seq(utils)
     override def millSourcePath = appsPath
-    override def ivyDeps = Agg(airframeLib,shapelessLib)
+    override def ivyDeps = Agg(
+      akkaHttpLib,
+      akkaStreamLib,
+      json4sNativeLib,
+      json4sJacksonLib,
+      redisclientLib,
+      shapelessLib,
+    )
   }
 
   override def mainClass = Some("org.gbz.calm.CalmApps")

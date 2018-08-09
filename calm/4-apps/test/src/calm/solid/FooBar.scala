@@ -17,13 +17,13 @@ object FooBar {
   }
 
   object Foo {
-    type Aux[T, R] = Foo[T] {type Repr = R}
+    type Aux[T, R] = Foo[T] { type Repr = R }
 
     def apply[T](implicit foo: Foo[T]): Foo[T] = foo
   }
 
   object Bar {
-    type Aux[T, R] = Bar[R] {type Repr = T}
+    type Aux[T, R] = Bar[R] { type Repr = T }
 
     def apply[R](implicit bar: Bar[R]): Bar[R] = bar
   }
