@@ -175,26 +175,3 @@ object calm extends TestableModule {
     loggingLib
   )
 }
-
-//import mill.scalajslib._
-//object scalajs extends ScalaJSModule {
-//  def scalaVersion = "2.12.6"
-//  def scalaJSVersion = "0.6.22"
-//  def mainClass = Some("DiodeTest")
-////  def mainClass = Some("BootstrapTestApp")
-////  def mainClass = Some("HelloApp")
-//
-////  override final def moduleKind = T { ModuleKind.CommonJSModule }
-//
-////  scalajslib.ScalaJSBridge.scalaJSBridge.
-//
-//  override def ivyDeps: Target[Loose.Agg[Dep]] = Agg (
-//    ivy"io.suzaku::diode::1.1.3",
-//    ivy"com.lihaoyi::upickle::0.6.6",
-//    ivy"com.github.karasiq::scalajs-bootstrap::2.3.1",
-//    ivy"com.lihaoyi::scalarx::0.3.2",
-//    ivy"com.lihaoyi::scalatags::0.6.7",
-//    ivy"io.scalajs.npm::kafka-node::0.4.2",
-//    ivy"org.scala-js::scalajs-dom::0.9.5"
-//  )
-//}
