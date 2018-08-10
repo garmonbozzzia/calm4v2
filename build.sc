@@ -86,40 +86,9 @@ object utils extends TestableModule {
 
 object calm extends TestableModule {
   override def moduleDeps = Seq(utils)
-  val modelPath = millSourcePath / "1-model"
-  val corePath = millSourcePath / "2-core"
-  val networkPath = millSourcePath / "3-network"
-  val storagePath = millSourcePath / "3-storage"
-  val appsPath = millSourcePath / "4-apps"
-  object model extends ScalaModule2_12 {
-    override def moduleDeps = Seq(utils)
-    override def millSourcePath = modelPath
-    override def ivyDeps = Agg(
-      airframeLib
-    )
-  }
 
-  object core extends ScalaModule2_12 {
-    override def moduleDeps = Seq(utils, model)
-    override def millSourcePath = corePath
-  }
-
-  object network extends ScalaModule2_12 {
-    override def moduleDeps = Seq(utils, model, core)
-    override def millSourcePath = networkPath
-    override def ivyDeps = Agg(
-      akkaHttpLib,
-      akkaStreamLib,
-      json4sNativeLib,
-      json4sJacksonLib,
-      airframeLib
-    )
-  }
-  object storage extends ScalaModule2_12 {
-    override def millSourcePath = storagePath
-  }
-
-  object apps extends TestableModule {
+  val appsPath = millSourcePath / "api"
+  object api extends TestableModule {
     override def moduleDeps = Seq(utils)
     override def millSourcePath = appsPath
     override def ivyDeps = Agg(
@@ -131,7 +100,7 @@ object calm extends TestableModule {
       shapelessLib,
     )
   }
-  
+
   override def mainClass = Some("org.gbz.calm.CalmApps")
   override def ivyDeps = Agg(
     airframeLib,
