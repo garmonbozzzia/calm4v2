@@ -1,7 +1,6 @@
 import coursier.maven.MavenRepository
 import mill._
 import mill.scalalib._
-import ammonite.ops._
 
 object Libraries {
   val akkaVersion = "2.5.14"
@@ -27,6 +26,7 @@ object Libraries {
   val ammoniteLib = ivy"com.lihaoyi::ammonite-ops:1.1.0"
   val shapelessLib = ivy"com.chuusai::shapeless:2.3.3"
 }
+
 import Libraries._
 
 trait ExtendedRepo extends ScalaModule {
@@ -69,23 +69,12 @@ trait MacroModule extends ScalaModule2_12 {
   override def ivyDeps = Agg(reflectLib)
 }
 
-//object foo extends ScalaModule {
-//  def scalaVersion = "2.12.6"
-//  override def repositories =
-//    super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
-//
-//  override def ivyDeps = Agg(
-//    kafkaClientLib
-//  )
-//}
-
 object utils extends TestableModule {
   object macroLib extends MacroModule {
     override def ivyDeps = Agg(
       reflectLib,
       airframeLogLib,
       akkaStreamLib,
-//      akkaHttpLib
     )
   }
   override def moduleDeps = Seq(macroLib)
@@ -97,52 +86,9 @@ object utils extends TestableModule {
 
 object calm extends TestableModule {
   override def moduleDeps = Seq(utils)
-  val modelPath = millSourcePath / "1-model"
-  val corePath = millSourcePath / "2-core"
-  val networkPath = millSourcePath / "3-network"
-  val storagePath = millSourcePath / "3-storage"
-  val appsPath = millSourcePath / "4-apps"
-  object model extends ScalaModule2_12 {
-    override def moduleDeps = Seq(utils)
-    override def millSourcePath = modelPath
-    override def ivyDeps = Agg(
-      airframeLib
-    )
-  }
 
-  def gitdiff = T.worker{
-    %%("git", "rev-parse", "HEAD")(appsPath).out.string
-  }
-
-  object core extends ScalaModule2_12 {
-    override def moduleDeps = Seq(utils, model)
-    override def millSourcePath = corePath
-  }
-
-  object network extends ScalaModule2_12 {
-    override def moduleDeps = Seq(utils, model, core)
-    override def millSourcePath = networkPath
-    override def ivyDeps = Agg(
-      akkaHttpLib,
-      akkaStreamLib,
-      json4sNativeLib,
-      json4sJacksonLib,
-      airframeLib
-    )
-  }
-  object storage extends ScalaModule2_12 {
-    override def millSourcePath = storagePath
-  }
-
-  object apps extends TestableModule {
-//    override def moduleDeps = Seq(utils, model, core, network, storage)
-    def gitdiff = T.input{
-//      T.sources(appsPath){
-//        %%("git", "diff", "--stat", "HEAD")(appsPath)
-//      }
-      %%("git", "diff", "--stat", "HEAD")(appsPath)
-    }
-//    override def compile = ???
+  val appsPath = millSourcePath / "api"
+  object api extends TestableModule {
     override def moduleDeps = Seq(utils)
     override def millSourcePath = appsPath
     override def ivyDeps = Agg(
@@ -175,26 +121,3 @@ object calm extends TestableModule {
     loggingLib
   )
 }
-
-//import mill.scalajslib._
-//object scalajs extends ScalaJSModule {
-//  def scalaVersion = "2.12.6"
-//  def scalaJSVersion = "0.6.22"
-//  def mainClass = Some("DiodeTest")
-////  def mainClass = Some("BootstrapTestApp")
-////  def mainClass = Some("HelloApp")
-//
-////  override final def moduleKind = T { ModuleKind.CommonJSModule }
-//
-////  scalajslib.ScalaJSBridge.scalaJSBridge.
-//
-//  override def ivyDeps: Target[Loose.Agg[Dep]] = Agg (
-//    ivy"io.suzaku::diode::1.1.3",
-//    ivy"com.lihaoyi::upickle::0.6.6",
-//    ivy"com.github.karasiq::scalajs-bootstrap::2.3.1",
-//    ivy"com.lihaoyi::scalarx::0.3.2",
-//    ivy"com.lihaoyi::scalatags::0.6.7",
-//    ivy"io.scalajs.npm::kafka-node::0.4.2",
-//    ivy"org.scala-js::scalajs-dom::0.9.5"
-//  )
-//}

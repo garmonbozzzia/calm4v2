@@ -1,7 +1,0 @@
-ToDo разобраться с тегами
-todo Refactor LogSupport
-todo How to abstract ApplyObject?
-todo refactor Global
-  //todo How properly to use overrides for moc testing?
-      //todo make possible to call method with any datatype which contains AppId and CourseId
-
