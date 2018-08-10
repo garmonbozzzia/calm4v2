@@ -1,7 +1,6 @@
 import coursier.maven.MavenRepository
 import mill._
 import mill.scalalib._
-import ammonite.ops._
 
 object Libraries {
   val akkaVersion = "2.5.14"
@@ -27,6 +26,7 @@ object Libraries {
   val ammoniteLib = ivy"com.lihaoyi::ammonite-ops:1.1.0"
   val shapelessLib = ivy"com.chuusai::shapeless:2.3.3"
 }
+
 import Libraries._
 
 trait ExtendedRepo extends ScalaModule {
@@ -69,23 +69,12 @@ trait MacroModule extends ScalaModule2_12 {
   override def ivyDeps = Agg(reflectLib)
 }
 
-//object foo extends ScalaModule {
-//  def scalaVersion = "2.12.6"
-//  override def repositories =
-//    super.repositories ++ Seq(MavenRepository("https://dl.bintray.com/cakesolutions/maven/"))
-//
-//  override def ivyDeps = Agg(
-//    kafkaClientLib
-//  )
-//}
-
 object utils extends TestableModule {
   object macroLib extends MacroModule {
     override def ivyDeps = Agg(
       reflectLib,
       airframeLogLib,
       akkaStreamLib,
-//      akkaHttpLib
     )
   }
   override def moduleDeps = Seq(macroLib)
@@ -110,10 +99,6 @@ object calm extends TestableModule {
     )
   }
 
-  def gitdiff = T.worker{
-    %%("git", "rev-parse", "HEAD")(appsPath).out.string
-  }
-
   object core extends ScalaModule2_12 {
     override def moduleDeps = Seq(utils, model)
     override def millSourcePath = corePath
@@ -135,14 +120,6 @@ object calm extends TestableModule {
   }
 
   object apps extends TestableModule {
-//    override def moduleDeps = Seq(utils, model, core, network, storage)
-    def gitdiff = T.input{
-//      T.sources(appsPath){
-//        %%("git", "diff", "--stat", "HEAD")(appsPath)
-//      }
-      %%("git", "diff", "--stat", "HEAD")(appsPath)
-    }
-//    override def compile = ???
     override def moduleDeps = Seq(utils)
     override def millSourcePath = appsPath
     override def ivyDeps = Agg(
@@ -154,7 +131,7 @@ object calm extends TestableModule {
       shapelessLib,
     )
   }
-
+  
   override def mainClass = Some("org.gbz.calm.CalmApps")
   override def ivyDeps = Agg(
     airframeLib,
