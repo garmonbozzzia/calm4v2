@@ -5,7 +5,7 @@ import ammonite.ops._
 
 import scala.util.Try
 
-val path = pwd/'calm/"4-apps"
+val path = pwd
 
 interp.watch(path)
 
@@ -42,8 +42,9 @@ val lsFiles = %%("git", "ls-files")(path).out.lines
 val totalFiles = lsFiles.length
 val totalLines = lsFiles
   .map(Path(_, path))
-  .map(read.lines)
-  .map(_.size)
+//  .filter(_)
+//  .map{x => println(x); read.lines(x)}
+  .map(x => Try(read.lines(x).size).getOrElse(0))
 
 val totalText = s"Total ${bold(totalLines.sum)} lines in ${bold(totalFiles)} files."
 
